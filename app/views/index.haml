@@ -1,0 +1,50 @@
+%html
+  %head
+    %title CAD Prototype A
+    = css :all
+    = js :all
+
+    -# SVG styles are special styles
+    != "<?xml-stylesheet type='text/css' href='css/svg/sketch.css' ?>"
+
+  %body
+    -# Toolbars
+
+    #ribbon
+      %ul
+        %li.ribbon-title CAD Prototype A
+        %li
+          %a{:href=> '#ribbonTabSketch'}
+            %span
+              %label Sketch
+
+      #ribbonTabSketch
+        %ul
+          - $commands.each do |cmd_set|
+            - cmd_set[1].each do |section|
+              %li{:class=>cmd_set[0].downcase+'-'+css_name(section[0])+'-section'}
+                %div
+                  - section[1].each do |cmd|
+                    %span{:class=>'cmd '+cmd[1][:css_name]+'-button', :cmd=>cmd[1][:css_name]}= cmd[0]
+
+
+    -# SVG Drawing Surface
+    .sketch
+
+
+    -# Selected Element Context Menu
+    .sketch-context-menu
+      .tab
+        %div
+          %h3 Elements
+          .elements none
+
+        %div
+          %h3 Constraints
+          .constraints none
+
+        %div
+          %h3 Add
+          %ul.add_a_constraint
+            %li Coincident
+

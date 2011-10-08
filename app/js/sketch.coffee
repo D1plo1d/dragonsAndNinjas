@@ -1,0 +1,84 @@
+# Enables scrolling and zooming for an SVG element created inside the selected element. Also delegates click events to child elements (if we even need this..[?])
+$.widget "ui.sketch", $.ui.mouse,
+  options: {}
+
+  # Private Variables
+  # ==================================
+
+  # the svg jquery element
+  $svg: null
+  # the raphael paper object containing the svg element containing the root set
+  paper: null
+  # the set containing all other sets and elements in the sketch
+  root: null
+
+  # the currently selected element of the sketch (or null if none are selected)
+  selectedElement: null
+
+  # the position of the sketch relative to the screen
+  _position: [0,0]
+
+  # Model
+  # ==================================
+
+
+  _create: ->
+    console.log "init"
+    this.paper = Raphael(this.element[0])
+    this.root = this.paper.set()
+    this.$svg = this.element.find("svg")
+    this._initController()
+
+
+  # sets the sketch's x,y position relative to the screen
+  set_position: (position) ->
+    delta = []
+    for i in [0..1]
+      delta[i] = position[i] - this._position[i]
+    this._position = position
+    this.root.translate(delta[0], delta[1])
+
+
+  # zooms the plane towards/away from the camera (- is towards the camera)
+  zoom: (zoom) ->
+    console.log "zoom"
+
+
+  # element selection
+  select: (element) ->
+    this.unselect()
+    this.selectedElement = element
+    $(element.node).toggleClass("selected", true).trigger("select", this.selectedElement)
+
+  unselect: ->
+    return if this.selectedElement == null
+    s = this.selectedElement
+    this.selectedElement = null
+    $(s.node).toggleClass("selected", false).trigger("unselect")
+
+
+  # Controller
+  # ==================================
+  _initController: ->
+    console.log "init controller"
+    this.element.mousedown => this.unselect()
+
+    this._mouseInit()
+    #TODO: keyboard init will go here
+
+  # Mouse interactions
+  # -------------------------------
+
+  _mouseStart: (e) ->
+    this._dragging = $(e.target).is("svg")
+    pos = this._position
+    this._sketch_offset_click_pos =  [ e.pageX - pos[0], e.pageY - pos[1] ]
+
+
+  _mouseDrag: (e) ->
+    return true unless this._dragging == true
+    # translate the sketch by [deltaX, deltaY]
+    p = [e.pageX - this._sketch_offset_click_pos[0], e.pageY - this._sketch_offset_click_pos[1]]
+    this.set_position p
+    this.element.trigger("translate")
+

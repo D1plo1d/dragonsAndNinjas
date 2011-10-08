@@ -1,0 +1,39 @@
+$inactive_color: #309
+$active_color: #37D
+
+.implicit-point, .explicit-point, .line
+  cursor: pointer
+  stroke: $inactive_color
+  fill: $inactive_color
+  &:hover, &.selected
+    stroke: $active_color
+    fill: $active_color
+
+.selected .explicit-point
+  stroke: $active_color
+  fill: $active_color
+
+
+// Points
+// =============================
+
+// implicit points
+circle.implicit-point
+  stroke: none
+  stroke-width: 0
+
+
+// explicit points
+tspan.explicit-point
+  font:
+    size: 29px
+    weight: bold
+    stroke: 3px
+
+
+// Lines
+// =============================
+
+path.line
+  stroke-width: 2px
+

@@ -1,0 +1,62 @@
+%html
+  %head
+
+    -# CSS
+
+    %link{:type => 'text/css', :href=> '/js/jquery-ui/css/smoothness/jquery-ui-1.8.13.custom.css', :rel=>'stylesheet'}
+    %link{:type => 'text/css', :href=>'./js/jquery-ui/css/smoothness/jquery-ui-1.8.13.custom.css', :rel=>'stylesheet'}
+    %link{:type => 'text/css', :href=>'./js/jquery-ui-ribbon/css/ui.button.css', :rel=>'stylesheet'}
+    %link{:type => 'text/css', :href=>'./js/jquery-ui-ribbon/css/ui.ribbon.css', :rel=>'stylesheet'}
+    %link{:type => 'text/css', :href=>'./css/viewport.css', :rel=>'stylesheet'}
+    %link{:type => 'text/css', :href=>'./css/ribbon.css', :rel=>'stylesheet'}
+
+    %link{:type => 'text/css', :href=>'/js/jquery.svg/jquery.svg.css', :rel=>'stylesheet'}
+
+
+    -# JS
+
+    %script{:type=>'text/javascript', :src=>'./js/jquery-1.6.1.min.js'}
+
+    %script{:type=>'text/javascript', :src=>'/js/jquery.svg/jquery.svg.js'}
+    %script{:type=>'text/javascript', :src=>'/js/jquery.svg/jquery.svgdom.js'}
+
+    %script{:type=>'text/javascript', :src=>'/js/raphael-min.js'}
+
+
+    %script{:type=>'text/javascript', :src=>'./js/jquery-ui-ribbon/js/ui.core.js'}
+    %script{:type=>'text/javascript', :src=>'./js/jquery-ui-ribbon/js/ui.tabs.js'}
+    %script{:type=>'text/javascript', :src=>'./js/jquery-ui-ribbon/js/ui.ribbon.js'}
+    %script{:type=>'text/javascript', :src=>'./js/jquery-ui-ribbon/js/ui.button.js'}
+
+    %script{:type=>'text/javascript', :src=>'/js/jquery.corner.js'}
+
+    - $coffee_scripts.each do |script|
+      %script{:type=>'text/javascript', :src=>'/js/'+script+'.js'}
+
+
+  %body
+
+    -# Toolbars
+
+    #ribbon
+      %ul
+        %li.ribbon-title New CAD
+        %li
+          %a{:href=> '#ribbonTabSketch'}
+            %span
+              %label Sketch
+
+      #ribbonTabSketch
+        %ul
+          - $commands.each do |cmd_set|
+            - cmd_set[1].each do |section|
+              %li{:class=>cmd_set[0].downcase+'-'+css_name(section[0])+'-section'}
+                %div
+                  - section[1].each do |cmd|
+                    %span{:class=>'cmd '+cmd[1][:css_name]+'-button', :cmd=>cmd[1][:css_name]}= cmd[0]
+
+
+    -# The SVG Drawing Surface
+
+    .viewport
+

@@ -1,0 +1,56 @@
+body
+{
+  margin: 0px;
+  padding: 0px;
+}
+
+#ribbon
+{
+  border: 0px;
+}
+
+.ui-tabs .ui-tabs-nav li.ribbon-title
+{
+  padding-top: 3px;
+  margin-right: 5px;
+}
+
+.dimension-button
+{
+}
+
+
+.sketch-add-entities-section
+{
+  width: 500px;
+}
+
+.cmd
+{
+  float: left;
+  width: 130px;
+  padding-left: 7px;
+  padding-right: 3px;
+}
+
+span.cmd:hover
+{
+  color: #3366FF;
+  cursor: pointer;
+}
+
+span.cmd.active
+{
+  background: #EEEEEE;
+}
+
+
+.sketch-modify-entities-section
+{
+  width: 350px;
+}
+
+.sketch-options-section
+{
+  width: 250px;
+}
