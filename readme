@@ -1,0 +1,6 @@
+require 'sinatra/base'
+require 'sinatra/assetpack'
+require 'sinatra/reloader'
+require "yaml"
+require "haml"
+require 'coffee-script' #also requires therubyracer gem!
