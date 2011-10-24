@@ -22,10 +22,12 @@
         %ul
           - $commands.each do |cmd_set|
             - cmd_set[1].each do |section|
-              %li{:class=>cmd_set[0].downcase+'-'+css_name(section[0])+'-section'}
+              %li{:class=>"#{cmd_set[0].downcase}-#{css_name(section[0])}-section"}
                 %div
                   - section[1].each do |cmd|
-                    %span{:class=>'cmd '+cmd[1][:css_name]+'-button', :cmd=>cmd[1][:css_name]}= cmd[0]
+                    - css_classes = "cmd #{cmd[1][:css_name].to_s}-button"
+                    - css_classes += " disabled" if cmd[1]['disabled'] == true
+                    %span{:class=>css_classes, :cmd=>cmd[1][:js_name]}= cmd[0]
 
 
     -# SVG Drawing Surface
@@ -43,8 +45,4 @@
           %h3 Constraints
           .constraints none
 
-        %div
-          %h3 Add
-          %ul.add_a_constraint
-            %li Coincident
 

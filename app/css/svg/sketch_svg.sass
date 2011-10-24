@@ -1,7 +1,7 @@
 $inactive_color: #309
 $active_color: #37D
 
-.implicit-point, .explicit-point, .line
+.implicit-point, .explicit-point
   cursor: pointer
   stroke: $inactive_color
   fill: $inactive_color
@@ -9,9 +9,18 @@ $active_color: #37D
     stroke: $active_color
     fill: $active_color
 
+.line, .arc
+  cursor: pointer
+  stroke: $inactive_color
+  &:hover, &.selected
+    stroke: $active_color
+
 .selected .explicit-point
   stroke: $active_color
   fill: $active_color
+
+.creation-guide
+  stroke-dasharray: 4, 4
 
 
 // Points

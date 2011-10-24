@@ -9,7 +9,8 @@ $ ->
 
       # after a point is dragged add a coincident constraint to any snapped points
       # or update their coincident constraint to include this point
-      this.$svg.bind "afterpointdrag", (event) =>
+      this.$svg.delegate ".point", "afterpointdrag aftercreate", (event) =>
+        console.log "moooo"
         $node = $(event.target)
         coincidentPoint = $node.data("snappedPoint")
 

@@ -28,7 +28,9 @@ class App < Sinatra::Base
     cmd_set[1].each do |section|
       section[1].each do |cmd|
         #cmd[1]['css_name'] = cmd[0].gsub(' ', '_').downcase
-        section[1][cmd[0]] = { :css_name => cmd[0].gsub(/[ \\\/]/, '_').downcase }
+        css_name = cmd[0].gsub(/[ \\\/]/, '_').downcase
+        js_name = cmd[0].downcase.gsub(/[\/\s]+[a-z]/) { |a| a.upcase }.gsub(/[\/\s]/, '')
+        section[1][cmd[0]] = ({:css_name => css_name, :js_name => js_name}).merge(cmd[1] || {})
       end
     end
   end

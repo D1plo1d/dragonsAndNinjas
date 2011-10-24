@@ -15,6 +15,29 @@ $ ->
       this.root.push this._points
 
 
+
+    # accepts a point or jquery object [or dom object] of a point and returns it's position as a vector
+    _pointToVector: (p) =>
+      return Vector.Zero(2) unless p?
+
+      if p.constructor.prototype == Raphael.el
+        $node = $(p.node)
+      else if p instanceof jQuery
+        $node = p
+        console.log $node
+        console.log $node.attr("x")
+      else # otherwise assume it is a dom object
+        $node = $(p)
+
+      values = []
+      for axis in ["x","y"]
+        v = $node.attr(axis)
+        v = $node.attr("c#{axis}") if isNaN(v)
+        values.push if isNaN(v) then 0 else v
+
+      return Vector.create(values)
+
+
     # move a point to a new absolute x/y position if it is not blocked by any constraints
     movePoint: (element, x = 0, y = 0, triggerConstraints = true) ->
       $node = $(element.node)
@@ -70,16 +93,18 @@ $ ->
       $node.trigger("move")
 
 
+
     # implicit:
     #   points added as a sub components of one or more parent elements (ex: the 2 end points of a line)
     # explicit:
     #   points created explicitly by the user or explicitly selected to persist even 
     #   if all it's related parent elements are destroyed
-    point: (opts) ->
+    point: (opts = false) ->
       defaults =
         type: "explicit"
         x: 0
         y: 0
+      undefinedOpts = opts == false or (opts.x? and opts.y?) == false
       opts = $.extend defaults, opts
 
       throw "invalid pointer type: #{type}" unless opts.type == "implicit" or opts.type == "explicit"
@@ -93,35 +118,50 @@ $ ->
           element = this.paper.text(opts.x, opts.y, "*")
           $node = $(element.node).find("tspan")
 
-      $node.addClass("#{opts.type}-point")
+      $node.addClass("#{opts.type}-point").addClass("point")
       this._points.push(element)
 
-      $node.click (e) =>
-        this.select(element)
-        e.stopPropagation()
-        return true
+
+      # initialize the point's ui events (after it has been created [through drag and drop or parameters]
+      initEvents = =>
+        $node.click (e) =>
+          this.select(element)
+          e.stopPropagation()
+          return true
+
+        # Updating the x/y attributes on scroll
+        if opts.type == "implicit"
+         this.element.bind "translate", => element.attr x: element.attr("cx"), y: element.attr("cy")
 
 
-      # Updating the x/y attributes on scroll
-      if opts.type == "implicit"
-       this.element.bind "translate", => element.attr x: element.attr("cx"), y: element.attr("cy")
+        # mouse interactions
+        xy_attr = if opts.type == "implicit" then {x: "cx", y: "cy"} else {x:"x", y:"y"}
+        drag_offset = []
+
+        start = (x, y, event) =>
+          drag_offset = [element.attr(xy_attr.x) - x, element.attr(xy_attr.y) - y]
+
+        move = (dx, dy, x, y, event) =>
+          this.movePoint element, x + drag_offset[0], y + drag_offset[1]
+
+        end = (event) =>
+          $node.trigger($.Event "afterpointdrag", point: element)
+
+        element.drag move, start, end
+
+        $node.trigger("aftercreate", element)
 
 
-      # mouse interactions
-      xy_attr = if opts.type == "implicit" then {x: "cx", y: "cy"} else {x:"x", y:"y"}
-      drag_offset = []
-
-      start = (x, y, event) =>
-        drag_offset = [element.attr(xy_attr.x) - x, element.attr(xy_attr.y) - y]
-
-      move = (dx, dy, x, y, event) =>
-        this.movePoint element, x + drag_offset[0], y + drag_offset[1]
-
-      end = (event) =>
-        $node.trigger($.Event "afterpointdrag", point: element)
-
-      element.drag move, start, end
-
+      # if this point has an undefined position default to interactive positioning (drag and drop point creation)
+      if undefinedOpts == true
+        this.$svg.bind "mousemove", f = (e) =>
+          this.movePoint(element, e.pageX + this._position[0], e.pageY + this._position[1] - this.element.position().top)
+        this.$svg.one "click", (e) =>
+          f(e)
+          this.$svg.unbind("mousemove", f)
+          initEvents()
+      else
+        initEvents()
 
       return element
 
