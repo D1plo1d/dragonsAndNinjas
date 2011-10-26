@@ -16,7 +16,7 @@ $ ->
 
 
 
-    # accepts a point or jquery object [or dom object] of a point and returns it's position as a vector
+    # accepts a point or jquery object [or dom object] of a point and returns it's position as a sylvester vector
     _pointToVector: (p) =>
       return Vector.Zero(2) unless p?
 
@@ -31,8 +31,8 @@ $ ->
 
       values = []
       for axis in ["x","y"]
-        v = $node.attr(axis)
-        v = $node.attr("c#{axis}") if isNaN(v)
+        v = parseInt($node.attr(axis))
+        v = parseInt($node.attr("c#{axis}")) if isNaN(v)
         values.push if isNaN(v) then 0 else v
 
       return Vector.create(values)

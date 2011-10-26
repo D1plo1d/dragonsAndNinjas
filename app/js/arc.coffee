@@ -31,37 +31,44 @@ $ ->
         # caching the points
         p = []
         for i in [0..points.length-1]
-          p[i] = []
-          for axis in ['x', 'y']
-            p[i][axis] = points[i].attr(axis)
+          p[i] = this._pointToVector(points[i])
 
-        # calculating the arc radius
-        radius = 0
+
+        # updating the on-screen arc segment
         if opts.type == "centerPoint"
-          radius = Raphael.distance(p[0..1])
+          #TODO: placeholder for a proper direction property
+          direction = +1
+          radius = p[0].distanceFrom(p[1])
 
-        # updating the guides for interactive element creation
-        if undefinedOpts == true
-          circleGuide.attr(cx: points[0].attr('x'), cy: points[0].attr('y'), r: radius)
-          radiusGuide.attr "path",
-            "M#{points[0].attr('x')},#{points[0].attr('y')}L#{points[1].attr('x')},#{points[1].attr('y')}"
+          if p.length > 2
 
-        if p.length > 2
-          # calculating the arc angle
-          angle = ( (Math.atan2(p[2].y - p[1].y, p[2].x - p[1].x) + Math.PI) % Math.PI ) - Math.PI / 2
-          #console.log angle
-          # console.log angle
+            # calculating the central arc angle
+            angle = []
+            for i in [1..2]
+              p_relative = p[i].subtract(p[0])
+              angle[i] = Math.atan2(p_relative.elements[1], p_relative.elements[0])
+            # the minor angle is the smaller of the two possible arc lengths from p[1] to p[2]
+            minorAngle = angle[2] - angle[1]
+            minorAngle -= Math.PI*2 if minorAngle > Math.PI
+            minorAngle += Math.PI*2 if minorAngle < -Math.PI
+            console.log minorAngle * 180 / Math.PI
+ 
+            # caculating the svg A path's flags
+            sweepFlag = if direction == 1 then 1 else 0
+            largeArcFlag = if minorAngle * direction > 0 then 0 else 1
 
-          # caculating the svg A path's flags
-          sweepFlag = if angle < Math.PI / 2 then 1 else 0
-          largeArcFlag = if Math.abs(angle) > Math.PI / 2 then 1 else 0
+            # Creating the path string
+            path = "M#{p[1].elements[0]}, #{p[1].elements[1]} "
+            path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{p[2].elements[0]}, #{p[2].elements[1]}"
 
-          # Creating the path string
-          path = "M#{p[1].x}, #{p[1].y} "
-          path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{p[2].x}, #{p[2].y}"
-          # console.log path
-          element.attr path: path
-          #console.log path
+            element.attr path: path
+
+          # updating the guides for interactive element creation
+          if undefinedOpts == true
+            circleGuide.attr(cx: points[0].attr('x'), cy: points[0].attr('y'), r: radius)
+            radiusGuide.attr "path",
+              "M#{points[0].attr('x')},#{points[0].attr('y')}L#{points[1].attr('x')},#{points[1].attr('y')}"
+
 
         return true
 

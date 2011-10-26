@@ -6,15 +6,15 @@ Sketch:
     line:
     circle:
       disabled: true
-    bezier:
-      disabled: true
-    rectangle:
-      disabled: true
+    #bezier:
+    #  disabled: true
+    #rectangle:
+    #  disabled: true
     arc:
     oval:
       disabled: true
-    "rounded rectangle":
-      disabled: true
+    #"rounded rectangle":
+    #  disabled: true
     bevel:
       disabled: true
     point:
