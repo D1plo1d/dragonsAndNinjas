@@ -1,0 +1,24 @@
+Sketch:
+  "Dimension":
+    Dimension:
+      disabled: true
+
+  "Modify Entities":
+    "Trim Entities":
+      disabled: true
+    "Convert Entities":
+      disabled: true
+    "Offset Entities":
+      disabled: true
+    "Merge Entities":
+      disabled: true
+    "Linear Sketch Pattern":
+      disabled: true
+    "Move Entities":
+      disabled: true
+
+  "Sketch Options":
+    "Display/Delete Relationship":
+      disabled: true
+    "Quick Snaps":
+      disabled: true
