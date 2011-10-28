@@ -32,11 +32,8 @@ $.widget "ui.sketch", $.ui.mouse,
 
   # sets the sketch's x,y position relative to the screen
   set_position: (position) ->
-    delta = []
-    for i in [0..1]
-      delta[i] = position[i] - this._position[i]
+    this.paper.setViewBox(-position[0], -position[1], this.element.width(), this.element.height(), true)
     this._position = position
-    this.root.translate(delta[0], delta[1])
 
 
   # zooms the plane towards/away from the camera (- is towards the camera)
@@ -62,6 +59,7 @@ $.widget "ui.sketch", $.ui.mouse,
   _initController: ->
     console.log "init controller"
     this.element.mousedown => this.unselect()
+    #this.$svg.draggable()
 
     this._mouseInit()
     #TODO: keyboard init will go here
@@ -78,7 +76,6 @@ $.widget "ui.sketch", $.ui.mouse,
   _mouseDrag: (e) ->
     return true unless this._dragging == true
     # translate the sketch by [deltaX, deltaY]
-    p = [e.pageX - this._sketch_offset_click_pos[0], e.pageY - this._sketch_offset_click_pos[1]]
+    p = [e.pageX - this._sketch_offset_click_pos[0], e.pageY - this._sketch_offset_click_pos[1] ]
     this.set_position p
-    this.element.trigger("translate")
 

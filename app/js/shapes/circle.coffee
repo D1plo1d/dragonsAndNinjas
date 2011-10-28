@@ -1,56 +1,57 @@
+$ -> $.shape "circle",
+  options:
+    x: 0, y: 0
+    radius: 0
 
-$ ->
-  $.extend $.ui.sketch.prototype,
-    circle: (opts = false) ->
-      defaults =
-        x: 0, y: 0
-        radius: 0
-        points: []
-      undefinedOpts = opts == false
-      opts = $.extend defaults, opts
+  _create: (ui) ->
 
-      # Points can be defined by x/y coordinates as well for simplicity.
-      # if they are definted that way, create new end points.
-      if undefinedOpts == false
-        points = opts.points
-        for i in [points.length .. 1]
-          points[i] = this.point(type: "implicit", x: opts["x"], y: opts["y"])
-          points[i].hide() if undefinedOpts == true
+    # initializes the circle svg element (later..)
+    _createElement = =>
+      this._initElement this.sketch.paper.ellipse.apply(this.sketch.paper, _.values this._newElementAttr())
 
 
-      # initializing the line svg / dom element
-      updatePath = =>
-        element.attr x: points[0].attr('x'), y: points[0].attr('y'), rx: opts.radius, ry: opts.radius
+    # create the center point, then adjust the circle radius
+    if ui == true
+      this.points[0] = this.sketch.point(type: "implicit")
+      $(this.options.points[0].node).one "aftercreate", (event, point) =>
+        _createElement()
 
-      element = this.paper.ellipse(opts.x, opts.y, opts.radius, opts.radius).toBack()
-      this.root.push(element)
+        # dragging the circle with the mouse after the center point has been defined
+        this.dragging = true
+        dragCircle = (e) =>
+          return true unless this.dragging == true
+
+          mouseV = $V([e.pageX - this.sketch._position[0], e.pageY - this.sketch._position[1] - this.sketch.element.position().top])
+
+          this.options.radius = mouseV.distanceFrom( this.sketch._pointToVector(this.points[0]) )
+          this._afterPointMove()
+
+          return true
+
+        $svg = this.sketch.$svg
+        $svg.bind "mousemove", dragCircle
+        $svg.one "click", (e) =>
+          this.dragging = false
+          this.$node.bind "mousedown", =>
+            console.log "down"
+            this.dragging = true
+            return true
+          $("body").bind "mouseup", =>
+            this.dragging = false
+            return true
+
+    else
+      _createElement()
 
 
-      finishInit = =>
-        $node = $(element.node).addClass("circle")
-        updatePath()
-
-        # selection event listeners
-        $node.click (e) => this.select(element)
-
-        # point move event listeners
-        for p in points
-          $(p.node).bind "move", updatePath
-
-        $node.trigger("aftercreate", element)
+  _afterPointMove: ->
+    this.element.attr( this._newElementAttr() ) if this.element?
 
 
-      # undefined circle -> interactive (ui) creation
-      # TODO: (work in progress), probably should be moved to point.. with on interactive create events feeding back
-      if undefinedOpts == true
-        points = [ this.point(type: "implicit") ]
-        this.element.bind "aftercreate", f = (event, element) =>
-          return true unless element == points[0]
-          this.element.unbind("aftercreate", f)
-          # TODO: circle dragging and dropping
-          # finishInit()
+  # creates the element attributes
+  _newElementAttr: ->
+    cx: this.points[0].attr('x')
+    cy: this.points[0].attr('y')
+    rx: this.options.radius
+    ry: this.options.radius
 
-      else
-        finishInit()
-
-      return element

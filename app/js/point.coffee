@@ -90,7 +90,7 @@ $ ->
 
       # move the element and trigger a move event
       element.attr pos
-      $node.trigger("move")
+      $node.trigger(jQuery.Event("move", point: element))
 
 
 
@@ -155,7 +155,7 @@ $ ->
       # if this point has an undefined position default to interactive positioning (drag and drop point creation)
       if undefinedOpts == true
         this.$svg.bind "mousemove", f = (e) =>
-          this.movePoint(element, e.pageX + this._position[0], e.pageY + this._position[1] - this.element.position().top)
+          this.movePoint(element, e.pageX - this._position[0], e.pageY - this._position[1] - this.element.position().top)
         this.$svg.one "click", (e) =>
           f(e)
           this.$svg.unbind("mousemove", f)

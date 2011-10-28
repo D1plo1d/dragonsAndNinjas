@@ -76,9 +76,10 @@ $(document).bind "lastjs", ->
 
   # Demos
   # ===============================
+
 ###
   console.log "point?"
-  for i in [0..10]
+  for i in [0..100]
     $('.sketch').sketch('point', x: Math.random()*400, y: Math.random()*200)
     console.log "doing the point number #{i}"
   console.log "point!"

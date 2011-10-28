@@ -3,7 +3,6 @@ Sketch:
   "Add Entities":
     line:
     circle:
-      #disabled: true
     #bezier:
     #  disabled: true
     #rectangle:
