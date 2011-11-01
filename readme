@@ -4,3 +4,27 @@ require 'sinatra/reloader'
 require "yaml"
 require "haml"
 require 'coffee-script' #also requires therubyracer gem!
+
+
+To Do List
+========================================================
+
+Top Priority
+ - refactor lines to use shape.coffee
+ - refactor drag and drop to share code between arc dragging, circle dragging, point dragging and screen dragging
+
+Everything Else
+  - save to svg
+  - export cnc-ready dwg
+  - export cnc-ready svg
+  - delete shape
+  - unselect event in shapes. kills interactive create.
+  - merge coincident points. add a list of shapes constrained to each point (merging in coincident code?)
+  - make points into proper objects like shapes
+  - wrap all shape functions with the expected "this" context.
+  - 2 point tangental arcs
+  - points merge properly on initial drag
+
+Done
+ - refactor arcs to use shape.coffee
+

@@ -1,57 +1,53 @@
 $ -> $.shape "circle",
+  numberOfPoints: 1
   options:
-    x: 0, y: 0
     radius: 0
 
   _create: (ui) ->
+    # ui: the circle is dragged with the mouse after the center point is created
+    # any other time: the circle can be clicked to drag
+    @dragging = ui
 
-    # initializes the circle svg element (later..)
-    _createElement = =>
-      this._initElement this.sketch.paper.ellipse.apply(this.sketch.paper, _.values this._newElementAttr())
+    # prefefined circle: set up the circle svg element and return
+    return this._initCircle() unless ui == true
 
-
-    # create the center point, then adjust the circle radius
-    if ui == true
-      this.points[0] = this.sketch.point(type: "implicit")
-      $(this.options.points[0].node).one "aftercreate", (event, point) =>
-        _createElement()
-
-        # dragging the circle with the mouse after the center point has been defined
-        this.dragging = true
-        dragCircle = (e) =>
-          return true unless this.dragging == true
-
-          mouseV = $V([e.pageX - this.sketch._position[0], e.pageY - this.sketch._position[1] - this.sketch.element.position().top])
-
-          this.options.radius = mouseV.distanceFrom( this.sketch._pointToVector(this.points[0]) )
-          this._afterPointMove()
-
-          return true
-
-        $svg = this.sketch.$svg
-        $svg.bind "mousemove", dragCircle
-        $svg.one "click", (e) =>
-          this.dragging = false
-          this.$node.bind "mousedown", =>
-            console.log "down"
-            this.dragging = true
-            return true
-          $("body").bind "mouseup", =>
-            this.dragging = false
-            return true
-
-    else
-      _createElement()
+    # undefined circle: create the center point, then adjust the circle radius
+    # 1) drag the point
+    @_addPoint( type: "implicit" )
+    # 2) place the point on click
+    $(@points[0].node).one "aftercreate", (event, point) =>
+      # 3) drag the circle
+      @_initCircle()
+      # 4) place the circle on click
+      @sketch.$svg.one "click", (e) =>
+        this.dragging = false
+        this.$node.trigger("aftercreate")
 
 
+  # initializes the circle svg element and it's events
+  _initCircle: ->
+    attrs = _.values(@_newElementAttr())
+    @element = @sketch.paper.ellipse.apply( @sketch.paper, attrs )
+    @_initElement()
+
+
+  # moves the circle element based on mouse drag and drop actions
+  _dragElement: (e, mouseVector) ->
+    console.log("drag")
+    @options.radius = mouseVector.distanceFrom( @sketch._pointToVector(this.points[0]) )
+    @_afterPointMove()
+    return true
+
+
+  # update the circle's position when it's point moves
   _afterPointMove: ->
-    this.element.attr( this._newElementAttr() ) if this.element?
+    this.element.attr( @_newElementAttr() ) if this.element?
 
 
   # creates the element attributes
   _newElementAttr: ->
-    cx: this.points[0].attr('x')
-    cy: this.points[0].attr('y')
-    rx: this.options.radius
-    ry: this.options.radius
+    cx: @points[0].attr('x')
+    cy: @points[0].attr('y')
+    rx: @options.radius
+    ry: @options.radius
 

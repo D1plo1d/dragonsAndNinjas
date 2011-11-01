@@ -10,7 +10,7 @@ $.shape "myShapesName",
 
   _create: (ui) -> # initialization code goes here. UI flag denotes if the gui should be used to setup the shape.
 
-  __afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
+  _afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
 
 
 Predefined methods (for your convenience):
@@ -32,11 +32,43 @@ All shape events are triggered on the shapes $node element.
 
 
 
-# The shared prototype for all shapes
-shapePrototype =
-  # sets this shapes element and initializes its event listeners and properties
+# The shared class for all shapes
+class Shape
+  numberOfPoints: 0
+  dragging: false
+  # The set of guide rapheal elements used in this shapes setup if ui = true.
+  # TODO: deleted automatically on the "aftercreate" event
+  guides: null
+
+  # mixing in the specific shapes' methods and variables
+  constructor: (shapeHash) ->
+    _.extend(this, shapeHash)
+    this[f] = $.proxy(this[f], this) for f in _.functions(this)
+
+
+  _addGuide: (guideElement) ->
+    @guides.push guideElement.hide()
+    $(guideElement.node).addClass("creation-guide")
+    return guideElement
+
+
+  _addPoint: (point) ->
+    # creating a point from a hash
+    point = this.sketch.point(point) unless point.constructor.prototype == Raphael.el
+    # pushing the point to the points array if it is not already in it
+    @points.push point unless _.include(this.points, point)
+
+    # point move event listeners
+    $(point.node).bind "move", (e) =>
+      @_afterPointMove(e.point)
+      return true
+
+    return point
+
+
+  # sets this shapes element to the given element (optional) and initializes its event listeners and properties
   _initElement: (element) ->
-    this.element = element
+    this.element = element if element?
 
     # move the shape behind the points
     this.element.toBack()
@@ -47,17 +79,30 @@ shapePrototype =
     # selection event listeners
     this.$node.click (e) => this.sketch.select(this.element)
 
+    # drag and drop event listeners
+    $svg = this.sketch.$svg
+    $svg.bind "mousemove", (e) =>
+      return true unless this.dragging == true
 
-  ###
-  _createNextPoint: () ->
-    
-  ###
+      top = this.sketch.element.position().top
+      mouseV = $V([e.pageX - this.sketch._position[0], e.pageY - this.sketch._position[1] - top])
+
+      this._dragElement(e, mouseV)
+
+      return true
+    this.$node.bind "mousedown", =>
+      console.log "down"
+      this.dragging = true
+      return true
+    $("body").bind "mouseup", =>
+      this.dragging = false
+      return true
 
 
 
-$.shape = (shapeType, shapeDefinition) =>
+$.shape = (shapeType, shapeHash) =>
   console.log("shapifying #{shapeType}")
-
+  shapeHash.shapeType = shapeType
 
   # Wrapping the create method so that parameters are in a good format
   sketchExtension = {}
@@ -68,44 +113,36 @@ $.shape = (shapeType, shapeDefinition) =>
     ui = ( opts == false )
 
     # intializing the shape object and it's options
-    shape = _.extend({shapeType: shapeType}, shapePrototype, shapeDefinition)
+    shape = new Shape(shapeHash)
     shape.sketch = this
     shape.options = $.extend (points: []), shape.options, opts
     shape.points = shape.options.points
+    shape.guides = this.paper.set()
 
-    # Points can be defined in the options by x/y coordinates as well as a simpler substitute
-    # for passing previously defined points. If the points are definted via a series of x/y 
-    # coordinates in the options, create points for each of the x#{i} and y#{i} options
-    ###
+
+    # creates a new point and stores it in the points array if one does not already exist at the index i.
+    loadPoint = (i) ->
+      return if @points[i]?
+      xyList = [ ["x#{i}", "y#{i}"] ]
+      xyList.push(["x", "y"]) if i == 0
+      # if the point is declared with x and y options instantiate it at [{x option value}, {y option value}]
+      for xy in xyList
+        pointOptions = type: "implicit", x: this.options[xy[0]], y: this.options[xy[1]]
+        return @_addPoint(pointOptions) if pointOptions.x? and pointOptions.y?
+      # if the point is undefined create it at [0,0]
+      return @_addPoint( type: "implicit", x: 0, y: 0 )
+
+    # create all the points if the object is pre-defined
     if ui == false
-      addPoint = (optsX, optsY) =>
-        point = this.point(type: "implicit", x: opts[optsX], y: opts[optsY])
-        point.hide() if ui == true
-        return point
+      loadPoint.call(shape, i) for i in [0 .. shape.numberOfPoints-1]
 
-      points = opts.points
-      i = shape.points.length - 1
-
-      shape.points = loop
-        i++
-        if opts["x#{i}"]? and opts["y#{i}"]?
-          addPoint("x#{i}", "y#{i}")
-        else if (i == 0 and opts["x"]? and opts["y"]?)
-          addPoint("x", "y")
-        else
-          break
-    ###
 
     # call the shape's create method with the ui flag for shape-specific intialization
-    shape._create.call( shape, ui )
+    shape._create(ui)
 
-    # point move event listeners
-    console.log shape.options.points
-    for p in shape.options.points
-      $(p.node).bind "move", (e) -> shape._afterPointMove.call(shape, e.point)
 
     # trigger the aftercreate event if the ui flag is false (otherwise we can't gaurentee the creation is complete)
-    if ui == false then $node.trigger("aftercreate", element)
+    if ui == false then shape.$node.trigger("aftercreate", shape.element)
 
     return shape
 
