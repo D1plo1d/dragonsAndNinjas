@@ -72,7 +72,7 @@ class Shape
 
     # create all the points if the object is pre-defined
     if ui == false
-      loadPoint.call(shape, i) for i in [0 .. shape.numberOfPoints-1]
+      loadPoint(i) for i in [0 .. @numberOfPoints-1]
 
     # predefined shape: set up the svg element
     @_initElement() unless ui == true
@@ -116,21 +116,31 @@ class Shape
   _attrs: -> throw "you need to overwride the _attrs function for your shape!"
 
 
-  # sets this shapes element to the given element (optional) and initializes its event listeners and properties
-  _initElement: (element) ->
-    # set the element to the given one if one is supplied
-    @element = element if element?
-    # if no element exists, use the _attr() method to generate attributes for a new element
-    @element = @sketch.paper[@raphaelType].apply( @sketch.paper, _.values( @_attrs() ) ) unless @element?
+  _dragElement: -> return true
+  _dropElement: -> return true
+
+
+  # sets this shapes element to a new element with given attributes (optional) and initializes its event listeners and properties
+  _initElement: (attrs) ->
+    # if no element exists, use the provide options or the _attr() method to generate attributes for a new element
+    unless @element?
+      attrs = @_attrs() unless attrs?
+      @element = @sketch.paper[@raphaelType].apply( @sketch.paper, _.values( attrs ) )
 
     # move the shape behind the points
     this.element.toBack()
 
     # store the $node variable for the element
-    this.$node = $(this.element.node).addClass(this.shapeType)
+    @$node = $(@element.node)
+    @$node = $(@$node).find("tspan") if @raphaelType == "text"
+    @$node.addClass(this.shapeType)
 
     # selection event listeners
-    this.$node.click (e) => this.sketch.select(this.element)
+    this.$node.click (e) =>
+      e.stopPropagation()
+      e.preventDefault()
+      this.sketch.select(this.element)
+      return true
 
     # drag and drop event listeners
     $svg = this.sketch.$svg
@@ -143,12 +153,16 @@ class Shape
       this._dragElement(e, mouseV)
 
       return true
-    this.$node.bind "mousedown", =>
+    this.$node.bind "mousedown", (e) =>
+      e.stopPropagation()
+      e.preventDefault()
       console.log "down"
       this.dragging = true
       return true
     $("body").bind "mouseup", =>
-      this.dragging = false
+      return true unless @dragging == true
+      @dragging = false
+      @_dropElement()
       return true
 
 

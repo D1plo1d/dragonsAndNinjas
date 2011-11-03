@@ -13,7 +13,7 @@ $ -> $.shape "line",
 
 
   _attrs: ->
-    path: "M#{@points[0].attr('x')}, #{@points[0].attr('y')}L#{@points[1].attr('x')},#{@points[1].attr('y')}"
+    path: "M#{points[0].x()}, #{points[0].y()}L#{points[1].x()},#{points[1].y()}"
 
 
   _dragElement: (e, mouseVector) ->
