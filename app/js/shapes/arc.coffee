@@ -6,16 +6,13 @@ $ -> $.shape "arc",
     type: "centerPoint"
     direction: 1
 
-  _create: (ui) ->
-    @dragging = ui
 
-    # predefined arc: set up the arc svg element and return
-    return @_initArc() unless ui == true
+  _create: (ui) ->
+    return unless ui == true
 
     # undefined arc: dependend on arc type
     capitalizedType = @options.type.charAt(0).toUpperCase() + @options.type.slice(1)
     this["_init#{capitalizedType}Arc"]()
-
 
 
   _initCenterPointArc: ->
@@ -29,16 +26,15 @@ $ -> $.shape "arc",
     console.log "f"
     f = () =>
       # unbind the previous point's create event
-      $(nextPoint.node).unbind("aftercreate", f) if nextPoint?
       console.log "next point!"
 
       # more points to create! keep going!
       if @points.length < @numberOfPoints
         console.log "next point! loading in!"
-        nextPoint = @_addPoint(type: "implicit")
+        nextPoint = @_addPoint()
         console.log nextPoint
         console.log $(nextPoint.node)
-        $(nextPoint.node).bind("aftercreate", f)
+        $(nextPoint.node).one("aftercreate", f)
 
         if @points.length == 2
           @guides.show()
@@ -65,6 +61,9 @@ $ -> $.shape "arc",
     @_initElement @sketch.paper.path( "M0,0L0,0" )
     @_afterPointMove(@points[0])
 
+
+  attrs: {}
+  _attrs: -> @attrs
 
   _afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
     # center point arc
@@ -103,7 +102,7 @@ $ -> $.shape "arc",
         path = "M#{p[1].elements[0]}, #{p[1].elements[1]} "
         path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{p[2].elements[0]}, #{p[2].elements[1]}"
 
-        @element.attr path: path
+        this.attrs = path: path
 
       # updating the guides for interactive element creation
       if @circleGuide != null and @radiusGuide != null

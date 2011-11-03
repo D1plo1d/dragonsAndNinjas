@@ -1,4 +1,7 @@
 Sketch:
+  "Dimension":
+    Dimension:
+      disabled: true
 
   "Add Entities":
     line:
@@ -8,8 +11,7 @@ Sketch:
     #rectangle:
     #  disabled: true
     arc:
-    oval:
-      disabled: true
+    ellipse:
     #"rounded rectangle":
     #  disabled: true
     #bevel:

@@ -1,5 +1,11 @@
 snappingDistance = 10
 
+
+# cheap global mouse position hack
+window.mouse = x:0, y:0
+$ -> $(document).mousemove (e) -> window.mouse = x: e.pageX, y: e.pageY
+
+
 $ ->
   _init = $.ui.sketch.prototype._init
 
@@ -102,10 +108,11 @@ $ ->
     point: (opts = false) ->
       defaults =
         type: "explicit"
-        x: 0
-        y: 0
+        x: window.mouse.x - this._position[0]
+        y: window.mouse.y - this._position[1] - this.element.position().top
       undefinedOpts = opts == false or (opts.x? and opts.y?) == false
       opts = $.extend defaults, opts
+      console.log defaults
 
       throw "invalid pointer type: #{type}" unless opts.type == "implicit" or opts.type == "explicit"
 

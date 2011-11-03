@@ -10,21 +10,25 @@ To Do List
 ========================================================
 
 Top Priority
- - refactor lines to use shape.coffee
- - refactor drag and drop to share code between arc dragging, circle dragging, point dragging and screen dragging
+  - oval drag and drop math so that drag is on the ellipse, not rx/ry
+  - oval drag points on each axis (including rotation) (guides)
 
 Everything Else
+  - merge coincident points. add a list of shapes constrained to each point (merging in coincident code?)
+  - points merge properly on initial drag
+  - refactor drag and drop to share code between arc dragging, circle dragging, point dragging and screen dragging
   - save to svg
   - export cnc-ready dwg
   - export cnc-ready svg
   - delete shape
   - unselect event in shapes. kills interactive create.
-  - merge coincident points. add a list of shapes constrained to each point (merging in coincident code?)
   - make points into proper objects like shapes
-  - wrap all shape functions with the expected "this" context.
   - 2 point tangental arcs
-  - points merge properly on initial drag
+  - 3 point circles
 
 Done
- - refactor arcs to use shape.coffee
+  - refactor lines to use shape.coffee
+  - refactor arcs to use shape.coffee
+  - basic ovals implementation
+  - wrap all shape functions with the expected "this" context.
 

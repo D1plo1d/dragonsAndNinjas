@@ -1,8 +1,4 @@
 Sketch:
-  "Dimension":
-    Dimension:
-      disabled: true
-
   "Modify Entities":
     "Trim Entities":
       disabled: true
