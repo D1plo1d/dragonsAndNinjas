@@ -42,17 +42,18 @@ $.widget "ui.sketch", $.ui.mouse,
 
 
   # element selection
-  select: (element) ->
-    this.unselect()
-    this.selectedElement = element
-    $(element.node).toggleClass("selected", true).trigger("select", this.selectedElement)
+  select: (shape) ->
+    console.log shape
+    @unselect()
+    @_selected = shape
+    shape.$node.toggleClass("selected", true).trigger("select", shape)
 
   unselect: ->
-    return if this.selectedElement == null
-    s = this.selectedElement
-    this.selectedElement = null
-    $(s.node).toggleClass("selected", false).trigger("unselect")
+    return unless @_selected? 
+    @_selected.$node.toggleClass("selected", false).trigger("unselect", @_selected)
+    @_selected = null
 
+  delete: -> @_selected.delete()
 
   # Controller
   # ==================================
@@ -63,6 +64,13 @@ $.widget "ui.sketch", $.ui.mouse,
 
     this._mouseInit()
     #TODO: keyboard init will go here
+    this._keyboardInit()
+
+  # Keyboard interactions
+  # -------------------------------
+
+  _keyboardInit: ->
+    $(document).bind "keyup", "del", => @delete()
 
   # Mouse interactions
   # -------------------------------

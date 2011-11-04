@@ -67,6 +67,10 @@ $ -> $.shape "point",
 
 
   delete: ->
+    # notifying listeners of this points untimely demise
+    @$node.trigger( event = $.Event("delete", point: this) )
+    return if event.isDefaultPrevented()
+    # deleting the point
     @element.remove()
     @$node.remove()
     @sketch._points = _.without(@sketch._points, this)

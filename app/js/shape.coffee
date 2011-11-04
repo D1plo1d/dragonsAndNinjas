@@ -139,7 +139,7 @@ class Shape
     this.$node.click (e) =>
       e.stopPropagation()
       e.preventDefault()
-      this.sketch.select(this.element)
+      @sketch.select(this)
       return true
 
     # drag and drop event listeners
