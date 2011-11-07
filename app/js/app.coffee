@@ -30,19 +30,34 @@ $(document).bind "lastjs", ->
   # ===============================
   $context_menu = $('.sketch-context-menu').hide()
 
-  $('.sketch').bind 'select', (e, element) =>
-    $context_menu.find(".elements").html("#{$(element.node).attr('class')} ##{element.id}")
+  $('.sketch').bind 'select', (e, selected) =>
+    $context_menu.empty()
+    # load in the element's configuration html
+    if selected.shapeType? and selected.shapeType == "arc"
+      html = "
+        <h4>Arc Direction</h4>
+        <input type='checkbox' class='clockwise-arc-checkbox' /> Clockwise
+      "
+      $context_menu.html(html)
 
+      # binding the config html to the selected objects properties
+      $(".clockwise-arc-checkbox").prop("checked", selected.direction() != 1).bind "click", (e) =>
+        selected.direction( if $(e.target).is(':checked') == false then 1 else 0 )
+
+    # show the menu
+    $context_menu.show "fade", "fast"
+
+  $('.sketch').bind 'unselect', (e, element) =>
+    $context_menu.hide "fade", "fast"
+
+  # Legacy codes
+  ###
+  constraintsHtml =  ->
     constraints_html = ""
     if ( constraints = $(element.node).data('constraints') )?
       console.log constraints
       constraints_html += "<li>#{c.type}</li>" for c in constraints
-
-    $context_menu.find(".constraints").html("<ul>#{constraints_html}</ul>")
-    $context_menu.show "slide", direction: "left"
-
-  $('.sketch').bind 'unselect', (e, element) =>
-    $context_menu.hide "slide", direction: "left"
+  ###
 
 
   # Save

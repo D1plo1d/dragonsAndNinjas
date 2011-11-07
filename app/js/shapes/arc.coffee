@@ -1,6 +1,6 @@
 
 $ -> $.shape "arc",
-  element: null
+  raphaelType: "path"
   numberOfPoints: 3
   options:
     type: "centerPoint"
@@ -16,53 +16,39 @@ $ -> $.shape "arc",
 
 
   _initCenterPointArc: ->
-    # TODO: (work in progress), probably should be moved to shape.. with on interactive create events feeding back
     console.log "making a fucking arc"
-    # circle for construction purposes, used to show the user a circle of the radius of the curve
-    @circleGuide = @_addGuide @sketch.paper.circle(10,20,30)
-    @radiusGuide = @_addGuide @sketch.paper.path("M0,0L10,10")
+    @_populatePoints()
 
-    nextPoint = null
-    console.log "f"
-    f = () =>
-      # unbind the previous point's create event
-      console.log "next point!"
 
-      # more points to create! keep going!
-      if @points.length < @numberOfPoints
-        console.log "next point! loading in!"
-        nextPoint = @_addPoint()
-        console.log nextPoint
-        console.log $(nextPoint.node)
-        $(nextPoint.node).one("aftercreate", f)
-
-        if @points.length == 2
-          @guides.show()
-        if @points.length == 3
-          console.log "mooo"
-          @_initArc()
-          @sketch.coradial(center: @points[0], points: @points[1..2])
-
-        @_afterPointMove(@points[0])
-
+  _populatePoints: ->
+    if @points.length < @numberOfPoints
+      @_addPoint().$node.one("aftercreate", @_populatePoints)
+      @_afterPointAdded()
+    else
       # final point created, finish the setup
-      else
-        @guides.remove()
-        @$node.trigger("aftercreate", @element)
-
-      return true
-    console.log "setting up first point"
-    f()
-    console.log "set up"
+      @guides.remove()
+      @_afterCreate()
 
 
-  _initArc: ->
-    console.log "setup the arc!"
-    @_initElement @sketch.paper.path( "M0,0L0,0" )
+  _afterPointAdded: (point) ->
+    if @points.length == 2
+      # circle for construction purposes, used to show the user a circle of the radius of the curve
+      @circleGuide = @_addGuide @sketch.paper.circle(10,20,30)
+      @radiusGuide = @_addGuide @sketch.paper.path("M0,0L10,10")
+
+    if @points.length == 3
+      console.log "mooo"
+      @_initElement()
+      @sketch.coradial(center: @points[0], points: @points[1..2])
+
+
+  direction: (direction) ->
+    return @options.direction unless direction?
+    @options.direction = direction
     @_afterPointMove(@points[0])
+    console.log direction
 
-
-  attrs: {}
+  attrs: { path: "M0,0L0,0" }
   _attrs: -> @attrs
 
   _afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
@@ -73,7 +59,7 @@ $ -> $.shape "arc",
     # caching the points
     p = []
     for i in [0..@points.length-1]
-      p[i] = @sketch._pointToVector(@points[i])
+      p[i] = @points[i].$v
 
 
     # updating the on-screen arc segment
@@ -92,21 +78,21 @@ $ -> $.shape "arc",
         minorAngle = angle[2] - angle[1]
         minorAngle -= Math.PI*2 if minorAngle > Math.PI
         minorAngle += Math.PI*2 if minorAngle < -Math.PI
-        console.log minorAngle * 180 / Math.PI
+        #console.log minorAngle * 180 / Math.PI
 
         # caculating the svg A path's flags
         sweepFlag = if direction == 1 then 1 else 0
         largeArcFlag = if minorAngle * direction > 0 then 0 else 1
 
         # Creating the path string
-        path = "M#{p[1].elements[0]}, #{p[1].elements[1]} "
-        path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{p[2].elements[0]}, #{p[2].elements[1]}"
+        path = "M#{@points[1].x()}, #{@points[1].y()} "
+        path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{@points[2].x()}, #{@points[2].y()}"
 
         this.attrs = path: path
 
       # updating the guides for interactive element creation
-      if @circleGuide != null and @radiusGuide != null
-        @circleGuide.attr(cx: @points[0].attr('x'), cy: @points[0].attr('y'), r: radius)
+      if @points.length >= 2
+        @circleGuide.attr(cx: @points[0].x(), cy: @points[0].y(), r: radius)
         @radiusGuide.attr "path",
-          "M#{@points[0].attr('x')},#{@points[0].attr('y')}L#{@points[1].attr('x')},#{@points[1].attr('y')}"
+          "M#{@points[0].x()},#{@points[0].y()}L#{@points[1].x()},#{@points[1].y()}"
 

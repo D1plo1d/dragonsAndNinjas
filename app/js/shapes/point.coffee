@@ -8,14 +8,18 @@ $ -> $.shape "point",
   options: { type: "explicit", $v: null, x: null, y: null }
 
 
-  _create: ->
-    ui = !( typeof(@options.x) == "number" and typeof(@options.y) == "number" or @options.$v? )
-    console.log "creating point #{ui}"
+  _ui: (options) -> !( typeof(@options.x) == "number" and typeof(@options.y) == "number" or @options.$v? )
 
+
+  _create: (ui) ->
     @_initVector(ui) # back end setup
     @_initSVG(ui) # front end setup
 
     @sketch._points.push this
+
+    if ui == true then @sketch.$svg.one "click", =>
+      @_afterCreate()
+      return false
 
 
   _initVector: (ui) ->
@@ -44,7 +48,10 @@ $ -> $.shape "point",
 
     # initializing the svg element
     @_initElement(attrs)
+    @element.toFront()
     @$node.addClass("#{@options.type}-point")
+    console.log "selecting"
+    @sketch.select(this)
 
 
   _attrs: ->
@@ -62,19 +69,15 @@ $ -> $.shape "point",
 
   merge: (point) ->
     console.log "merge #{point}"
+    $nodes = $().add(point.$node).add(@$node)
+    $nodes.trigger(type: "merge", deadPoint: point, mergedPoint: this)
     #TODO: proper merging of all objects that reference that point
+    point.$node.unbind()
     point.delete()
 
 
-  delete: ->
-    # notifying listeners of this points untimely demise
-    @$node.trigger( event = $.Event("delete", point: this) )
-    return if event.isDefaultPrevented()
-    # deleting the point
-    @element.remove()
-    @$node.remove()
-    @sketch._points = _.without(@sketch._points, this)
-    @sketch._shapes = _.without(@sketch._shapes, this)
+  _afterDelete: -> @sketch._points = _.without(@sketch._points, this)
+
 
 
   _dragElement: (e, mouseVector) -> @move(mouseVector)

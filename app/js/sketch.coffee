@@ -43,17 +43,20 @@ $.widget "ui.sketch", $.ui.mouse,
 
   # element selection
   select: (shape) ->
-    console.log shape
+    console.log "Selected!"
     @unselect()
+    console.log shape.$node
     @_selected = shape
     shape.$node.toggleClass("selected", true).trigger("select", shape)
+    console.log shape.$node.attr("class")
+    shape.element.toFront()
 
   unselect: ->
     return unless @_selected? 
     @_selected.$node.toggleClass("selected", false).trigger("unselect", @_selected)
     @_selected = null
 
-  delete: -> @_selected.delete()
+  delete: -> if @_selected? then @_selected.delete()
 
   # Controller
   # ==================================

@@ -10,25 +10,37 @@ To Do List
 ========================================================
 
 Top Priority
-  - oval drag and drop math so that drag is on the ellipse, not rx/ry
-  - oval drag points on each axis (including rotation) (guides)
+  - side bar checkbox to switch major / minor curve
+  - handle point merging for coradial constraints
 
 Everything Else
-  - merge coincident points. add a list of shapes constrained to each point (merging in coincident code?)
-  - points merge properly on initial drag
-  - refactor drag and drop to share code between arc dragging, circle dragging, point dragging and screen dragging
+  - shapes->cancel. cancels interactive create? deletes the shape unless its created?
+  - show guides on select. hide guides on deselect (unless it's being created)
+  - file menu (orb or whatever they call it) or maybe just a save button?
+  - guide points? (for ovals extra drag points?)
+    - excluded from the points and shapes arrays
+  - oval drag and drop math so that drag is on the ellipse, not rx/ry
+  - oval drag points on each axis (including rotation) (guides)
+  - refactor shape drag and drop and sketch dragging to share code
   - save to svg
   - export cnc-ready dwg
   - export cnc-ready svg
-  - delete shape
-  - unselect event in shapes. kills interactive create.
-  - make points into proper objects like shapes
+  - add a list of shapes constrained to each point (merging in coincident code?)
   - 2 point tangental arcs
   - 3 point circles
+
+Very Low (probably bs) Priority box o' shit
+  - constraints -> sketch extension
+  - merging coradial constraints
 
 Done
   - refactor lines to use shape.coffee
   - refactor arcs to use shape.coffee
   - basic ovals implementation
   - wrap all shape functions with the expected "this" context.
+  - merge coincident points.
+  - points merge properly on initial drag
+  - refactor drag and drop to share code between arc dragging, circle dragging, and point dragging
+  - delete shape
+  - make points into proper objects like shapes
 

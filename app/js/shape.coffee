@@ -56,7 +56,8 @@ class Shape
 
     # true if the shape's parameters are not defined and thus we need to
     # build the object via the gui and user interaction
-    ui = ( options == false )
+    ui = @_ui( options )
+    @_created = ui == false
 
     # creates a new point and stores it in the points array if one does not already exist at the index i.
     loadPoint = (i) =>
@@ -71,7 +72,7 @@ class Shape
       return @_addPoint( type: "implicit", x: 0, y: 0 )
 
     # create all the points if the object is pre-defined
-    if ui == false
+    if ui == false and @numberOfPoints > 0
       loadPoint(i) for i in [0 .. @numberOfPoints-1]
 
     # predefined shape: set up the svg element
@@ -81,12 +82,45 @@ class Shape
     @_create(ui)
 
     # trigger the aftercreate event if the ui flag is false (otherwise we can't gaurentee the creation is complete)
-    if ui == false then @$node.trigger("aftercreate", @element)
+    @_afterCreate() if ui == false
+
+
+  # returns true if the shape is not fully defined and requiring gui interaction to fully define it.
+  _ui: (options) -> options == false
+
+
+  # signals the end of the shapes creation (asynchronously triggers the "aftercreate" event for gui interaction)
+  _afterCreate: ->
+    console.log "created #{@shapeType}"
+    return unless @_created == false
+    @dragging = false
+    @$node.trigger("aftercreate", this)
+    @_created = true
+
+
+  # deletes the shape.
+  delete: ->
+    return if @_deleting == true
+    # notifying listeners of this shapes untimely demise
+    @$node.trigger( event = $.Event("delete", point: this) )
+    return if event.isDefaultPrevented()
+
+    @_deleting = true
+    # delete any points that are deletable, ignore the ones that are still in use.
+    point.delete() for point in @points
+
+    # deleting the shape and any points it may have
+    @element.remove()
+    @$node.remove()
+    @sketch._shapes = _.without(@sketch._shapes, this)
+    @_afterDelete()
+
+  _afterDelete: -> return null # custom deletion code goes here
 
 
   # adds and and initializes a guide (a graphical element for shape constructing purposes) to this shape
   _addGuide: (guideElement) ->
-    @guides.push guideElement.hide()
+    @guides.push guideElement
     $(guideElement.node).addClass("creation-guide")
     return guideElement
 
@@ -95,20 +129,38 @@ class Shape
   # _addPoint() defaults to a implicit point, a hash or point can also be passed to override this default.
   _addPoint: (point = type: "implicit") ->
     # creating a point from a hash
-    point = this.sketch.point(point) unless point.constructor.prototype == Raphael.el
-    # pushing the point to the points array if it is not already in it
-    @points.push point unless _.include(this.points, point)
+    point = @sketch.point(point) if point.type?
 
+    # pushing the point to the points array if it is not already in it
+    @points.push point unless _.include(this.points, point)    
+
+    @_initPointEvents(point)
+
+    return point
+
+
+  _initPointEvents: (point) ->
     # point move event listeners
-    $(point.node).bind "move", (e) =>
+    point.$node.bind "move", @_pointMoved
+
+    # point deletion -> deletes this shape as well
+    point.$node.bind "delete", => @delete()
+
+    # point merging -> switch over to the new point
+    point.$node.bind "merge", (e) =>
+      index = _.indexOf(@points, e.deadPoint)
+      return if index == -1
+      @points[index] = e.mergedPoint
+      @_initPointEvents( e.mergedPoint )
+
+
+  _pointMoved: (e) =>
       @_afterPointMove(e.point) if @_afterPointMove?
 
       # update the element only if it and all it's points exist
       if @points.length == @numberOfPoints and @element?
         @element.attr @_attrs()
       return true
-
-    return point
 
 
   # gets updated raphael attributes as a hash.
@@ -135,13 +187,6 @@ class Shape
     @$node = $(@$node).find("tspan") if @raphaelType == "text"
     @$node.addClass(this.shapeType)
 
-    # selection event listeners
-    this.$node.click (e) =>
-      e.stopPropagation()
-      e.preventDefault()
-      @sketch.select(this)
-      return true
-
     # drag and drop event listeners
     $svg = this.sketch.$svg
     $svg.bind "mousemove", (e) =>
@@ -153,22 +198,22 @@ class Shape
       this._dragElement(e, mouseV)
 
       return true
+
     this.$node.bind "mousedown", (e) =>
-      e.stopPropagation()
-      e.preventDefault()
-      console.log "down"
-      this.dragging = true
-      return true
-    $("body").bind "mouseup", =>
+      return true unless @_created == true
+      @dragging = true
+      @sketch.select(this)
+      return false
+
+    $("body").bind "mouseup", (e) =>
       return true unless @dragging == true
       @dragging = false
       @_dropElement()
-      return true
-
+      return false
 
 
 # Glue to bind shapes to sketches
-$.shape = (shapeType, shapeHash) =>
+$.shape = (shapeType, shapeHash) ->
   console.log("shapifying #{shapeType}")
   shapeHash.shapeType = shapeType
 
