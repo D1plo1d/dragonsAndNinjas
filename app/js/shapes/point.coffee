@@ -50,8 +50,6 @@ $ -> $.shape "point",
     @_initElement(attrs)
     @element.toFront()
     @$node.addClass("#{@options.type}-point")
-    console.log "selecting"
-    @sketch.select(this)
 
 
   _attrs: ->
@@ -68,6 +66,7 @@ $ -> $.shape "point",
 
 
   merge: (point) ->
+    return if point.isDeleted() or this.isDeleted()
     console.log "merge #{point}"
     $nodes = $().add(point.$node).add(@$node)
     $nodes.trigger(type: "merge", deadPoint: point, mergedPoint: this)
@@ -76,8 +75,8 @@ $ -> $.shape "point",
     point.delete()
 
 
-  _afterDelete: -> @sketch._points = _.without(@sketch._points, this)
-
+  _afterDelete: ->
+    @sketch._points = _.without(@sketch._points, this)
 
 
   _dragElement: (e, mouseVector) -> @move(mouseVector)
@@ -85,6 +84,7 @@ $ -> $.shape "point",
 
   _dropElement: ->
     @merge(@coincidentPoint) if @coincidentPoint?
+    @coincidentPoint = null
 
 
   # move a point to a new absolute x/y position if it is not blocked by any constraints

@@ -1,20 +1,7 @@
-require 'sinatra/base'
-require 'sinatra/assetpack'
-require 'sinatra/reloader'
-require "yaml"
-require "haml"
-require 'coffee-script' #also requires therubyracer gem!
-
-
 # config
 # ======================================
 
-class App < Sinatra::Base
-
-  set :root, File.join(File.dirname(__FILE__), '..')
-  set :environment => :test
-  register Sinatra::AssetPack
-  register Sinatra::Reloader
+class App < MyWay
 
 
   # model

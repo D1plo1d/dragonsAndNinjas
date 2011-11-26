@@ -11,7 +11,7 @@ Sketch:
     #rectangle:
     #  disabled: true
     arc:
-    ellipse:
+    #ellipse:
     #"rounded rectangle":
     #  disabled: true
     #bevel:

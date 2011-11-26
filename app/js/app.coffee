@@ -5,20 +5,15 @@ $(document).bind "lastjs", ->
     collapsible: false
     showTabsets: false
 
-  cmdElement = null
-
   $ribbon = $('#ribbon')
   $ribbon.find('.cmd').corner('round 5px').click (e) =>
-    if $(this).hasClass('active') or $(e.target).hasClass('disabled') then return
+    if $(e.target).hasClass('active') or $(e.target).hasClass('disabled') then return
     $('.cmd').removeClass('active')
-    $(e.target).toggleClass('active')
-    cmdElement = $('.sketch').sketch($(e.target).attr('cmd'))
-    $(e.target).attr('cmd')
+    #$(e.target).toggleClass('active')
+    $('.sketch').sketch($(e.target).attr('cmd'))
 
-  $('.sketch').bind 'aftercreate', (event, element) =>
-    return true unless cmdElement == element
-    cmdElement = null
-    $ribbon.find('.active').removeClass('active')
+  #$('.sketch').bind 'aftercreate cancel', (event) =>
+  #  $ribbon.find('.active').removeClass('active')
 
   # Sketch
   # ===============================
@@ -32,20 +27,25 @@ $(document).bind "lastjs", ->
 
   $('.sketch').bind 'select', (e, selected) =>
     $context_menu.empty()
-    # load in the element's configuration html
-    if selected.shapeType? and selected.shapeType == "arc"
-      html = "
-        <h4>Arc Direction</h4>
-        <input type='checkbox' class='clockwise-arc-checkbox' /> Clockwise
-      "
-      $context_menu.html(html)
+    console.log selected
+    return unless selected.length > 0
+    for s in selected
+      # load in the element's configuration html
+      if s.shapeType? and s.shapeType == "arc"
+        html = "
+          <h4>Arc Direction</h4>
+          <input type='checkbox' class='clockwise-arc-checkbox' /> Clockwise
+        "
+        $context_menu.html(html)
 
-      # binding the config html to the selected objects properties
-      $(".clockwise-arc-checkbox").prop("checked", selected.direction() != 1).bind "click", (e) =>
-        selected.direction( if $(e.target).is(':checked') == false then 1 else 0 )
+        # binding the config html to the selected objects properties
+        $(".clockwise-arc-checkbox").prop("checked", s.direction() != 1).bind "click", (e) =>
+          s.direction( if $(e.target).is(':checked') == false then 1 else 0 )
+          return true
 
-    # show the menu
-    $context_menu.show "fade", "fast"
+        # show the menu
+        $context_menu.show "fade", "fast"
+        return true
 
   $('.sketch').bind 'unselect', (e, element) =>
     $context_menu.hide "fade", "fast"

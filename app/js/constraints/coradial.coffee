@@ -12,15 +12,33 @@ $ -> $.sketchExtension "coradial",
 
     @points = @options.points
     @center = @options.center
-    @_initPoint(point) for point in @points
+    @_initPointEvents(@center)
+    @_initPointEvents(point) for point in @points
 
 
-  _initPoint: (point) ->
+  _initPointEvents: (point) ->
     point.$node.bind "beforemove", @_beforePointMove
+    point.$node.bind "merge", @_mergePoint
 
 
   # todo: constraint merging and tracking
-  _merge: (constraint) -> return false
+  merge: (constraint) ->
+    return false
+
+
+  _mergePoint: (e) ->
+    console.log "merging?"
+    index = _.indexOf(@points, e.deadPoint)
+    if index != -1
+      return false if e.deadPoint == @center
+      @points[index] = e.mergedPoint
+    else if e.deadPoint == @center
+      @center = e.mergedPoint
+    else
+      return true
+    @_initPointEvents( e.mergedPoint )
+    return true
+
 
 
   _beforePointMove: (e) ->

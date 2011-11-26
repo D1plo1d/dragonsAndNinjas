@@ -59,20 +59,25 @@ class Shape
     ui = @_ui( options )
     @_created = ui == false
 
-    # creates a new point and stores it in the points array if one does not already exist at the index i.
+    # select all newly created shapes by default unless it is an implicit point
+    # (in which case it will automatically be included in it's parent shapes' selection array)
+    @sketch.select(this) unless this.shapeType == "point" and this.options.type == "implicit"
+
+    # initializes a predefined point at index i if one exists
     loadPoint = (i) =>
-      return if @points[i]?
+      # initialize the points events and return if it already exists
+      return @_addPoint(@points[i]) if @points[i]?
+      # otherwise try and create it from x and y options
       xyList = [ ["x#{i}", "y#{i}"] ]
       xyList.push(["x", "y"]) if i == 0
       # if the point is declared with x and y options instantiate it at [{x option value}, {y option value}]
       for xy in xyList
         pointOptions = type: "implicit", x: this.options[xy[0]], y: this.options[xy[1]]
         return @_addPoint(pointOptions) if pointOptions.x? and pointOptions.y?
-      # if the point is undefined create it at [0,0]
-      return @_addPoint( type: "implicit", x: 0, y: 0 )
+      # if the point is undefined leave it for interactive setup
 
-    # create all the points if the object is pre-defined
-    if ui == false and @numberOfPoints > 0
+    # setup each predefined point
+    if @numberOfPoints > 0
       loadPoint(i) for i in [0 .. @numberOfPoints-1]
 
     # predefined shape: set up the svg element
@@ -86,7 +91,7 @@ class Shape
 
 
   # returns true if the shape is not fully defined and requiring gui interaction to fully define it.
-  _ui: (options) -> options == false
+  _ui: (options) -> options == false or options.points.length < @numberOfPoints
 
 
   # signals the end of the shapes creation (asynchronously triggers the "aftercreate" event for gui interaction)
@@ -94,29 +99,36 @@ class Shape
     console.log "created #{@shapeType}"
     return unless @_created == false
     @dragging = false
-    @$node.trigger("aftercreate", this)
     @_created = true
+    @$node.trigger("aftercreate", this)
 
 
-  # deletes the shape.
-  delete: ->
+  # cancels the current operation on this shape (if any)
+  cancel: () ->
+    @delete() if @_created == false
+
+
+  # deletes the shape. targetShape: the shape that was deleted that started this deletion chain.
+  delete: (targetShape = this) ->
     return if @_deleting == true
-    # notifying listeners of this shapes untimely demise
-    @$node.trigger( event = $.Event("delete", point: this) )
-    return if event.isDefaultPrevented()
+    # notifying listeners of this shapes untimely demise if the node is created
+    if @$node?
+      @$node.trigger( event = $.Event("beforedelete", targetShape: targetShape) )
+      return if event.isDefaultPrevented()
 
     @_deleting = true
     # delete any points that are deletable, ignore the ones that are still in use.
-    point.delete() for point in @points
+    point.delete(targetShape) for point in @points
 
     # deleting the shape and any points it may have
-    @element.remove()
-    @$node.remove()
+    @element.remove() if @element?
+    @$node.remove() if @$node?
     @sketch._shapes = _.without(@sketch._shapes, this)
     @_afterDelete()
 
   _afterDelete: -> return null # custom deletion code goes here
 
+  isDeleted: -> return @_deleting == true
 
   # adds and and initializes a guide (a graphical element for shape constructing purposes) to this shape
   _addGuide: (guideElement) ->
@@ -136,6 +148,9 @@ class Shape
 
     @_initPointEvents(point)
 
+    # if this shape is selected style the newly added point appropriately
+    @sketch.updateSelection()
+
     return point
 
 
@@ -144,7 +159,7 @@ class Shape
     point.$node.bind "move", @_pointMoved
 
     # point deletion -> deletes this shape as well
-    point.$node.bind "delete", => @delete()
+    point.$node.bind "beforedelete", @_pointBeforeDelete
 
     # point merging -> switch over to the new point
     point.$node.bind "merge", (e) =>
@@ -152,6 +167,18 @@ class Shape
       return if index == -1
       @points[index] = e.mergedPoint
       @_initPointEvents( e.mergedPoint )
+
+
+  _pointBeforeDelete: (e) =>
+    return true if @_deleting == true
+    # if a point of this shape is the original target of a deletion delete this shape
+    console.log e.targetShape
+    if _.include(@points, e.targetShape)
+      @delete()
+      return true
+    # if the original target of deletion is a unrelated shape containing a shared point then 
+    # prevent the shared point from being deleted, it is still required by this shape.
+    return false
 
 
   _pointMoved: (e) =>
@@ -199,13 +226,22 @@ class Shape
 
       return true
 
+    # if this shape is selected style it appropriately
+    @sketch.updateSelection()
+
+
     this.$node.bind "mousedown", (e) =>
       return true unless @_created == true
+      # prevent drag and drop if we are unable to select this shape
+      return true unless @sketch.select(this)
       @dragging = true
-      @sketch.select(this)
       return false
 
-    $("body").bind "mouseup", (e) =>
+    # ignore mouse downs if we are dragging the element
+    # (so that we can click to place it and not accidently trigger svg dragging)
+    @sketch.$svg.bind "mousedown", (e) => return @dragging != true
+
+    @sketch.$svg.bind "mouseup", (e) =>
       return true unless @dragging == true
       @dragging = false
       @_dropElement()

@@ -43,20 +43,59 @@ $.widget "ui.sketch", $.ui.mouse,
 
   # element selection
   select: (shape) ->
-    console.log "Selected!"
-    @unselect()
-    console.log shape.$node
-    @_selected = shape
-    shape.$node.toggleClass("selected", true).trigger("select", shape)
-    console.log shape.$node.attr("class")
-    shape.element.toFront()
+    if @hasSelection()
+      # if the element is included in the selected shapes maintain the current selection
+      return true if _.include(@_selected, shape)
+      # prevent selection if the current shape creation is not complete
+      return false unless s._created == true for s in @_selected
+      # kill the previous selections
+      @unselect()
+
+    @_selected = [shape]
+    @updateSelection()
+
+    @$svg.trigger("select", [@_selected])
+    return true
+
+
+  hasSelection: () -> @_selected? and @_selected.length > 0
+
+  updateSelection: () ->
+    @_selected = _.uniq( _.union( @_selected, @_selectedChildPoints() ) )
+    for s in @_selected
+      s.$node.toggleClass("selected", true) if s.$node?
+      s.element.toFront() if s.element?
+
 
   unselect: ->
-    return unless @_selected? 
-    @_selected.$node.toggleClass("selected", false).trigger("unselect", @_selected)
+    return unless @hasSelection()
+    @cancel()
+    for s in @_selected
+      s.$node.toggleClass("selected", false) if s.$node?
     @_selected = null
+    @$svg.trigger("unselect")
 
-  delete: -> if @_selected? then @_selected.delete()
+
+  # every point belonging to another shape in the current selection
+  _selectedChildPoints: -> _( s.points for s in @_selected ).chain().flatten().uniq().value()
+
+
+  # every shape in the current selection except points belonging to another shape in the current selection
+  _selectedParentShapes: -> _.difference( @_selected, @_selectedChildPoints() )
+
+
+  cancel: ->
+    console.log "cancelling #{s.shapeType}" for s in @_selectedParentShapes()
+    return unless @hasSelection()
+    s.cancel() for s in @_selectedParentShapes()
+    @updateSelection()
+    @$svg.trigger("cancel")
+
+
+  delete: ->
+    return unless @hasSelection()
+    s.delete() for s in @_selectedParentShapes()
+    @unselect()
 
   # Controller
   # ==================================
@@ -74,6 +113,16 @@ $.widget "ui.sketch", $.ui.mouse,
 
   _keyboardInit: ->
     $(document).bind "keyup", "del", => @delete()
+    $(document).bind "keyup", "esc", => @cancel()
+
+    # TODO: move this to shape or line?
+    @shift = false
+    $(document).bind "keydown", "shift", => @shift = true
+    $(document).bind "keyup", "shift", => @shift = false
+
+    $(@$svg).bind "aftercreate", (e, shape) =>
+      if @shift and shape.shapeType == "line"
+        @line(points: [ shape.points[1] ])
 
   # Mouse interactions
   # -------------------------------
