@@ -59,6 +59,8 @@ class Shape
     ui = @_ui( options )
     @_created = ui == false
 
+    @sketch.$svg.trigger("beforeCreate", this)
+
     # select all newly created shapes by default unless it is an implicit point
     # (in which case it will automatically be included in it's parent shapes' selection array)
     @sketch.select(this) unless this.shapeType == "point" and this.options.type == "implicit"
@@ -234,6 +236,7 @@ class Shape
       return true unless @_created == true
       # prevent drag and drop if we are unable to select this shape
       return true unless @sketch.select(this)
+      @$node.trigger("beforeDrag", this) if @$node?
       @dragging = true
       return false
 
@@ -245,6 +248,7 @@ class Shape
       return true unless @dragging == true
       @dragging = false
       @_dropElement()
+      @$node.trigger("afterDrop", this) if @$node?
       return false
 
 

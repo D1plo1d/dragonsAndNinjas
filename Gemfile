@@ -15,7 +15,6 @@ gem "coffee-script"
 
 
 # Other Libraries
-gem "geocoder"
 
 
 # ENV-specific Libraries

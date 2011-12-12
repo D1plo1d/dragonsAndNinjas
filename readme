@@ -52,8 +52,13 @@ DONE (previous Top Priority ++9% items)
 
 Top Priority Bugs ++7%
 
+  - arc non-dragged points should not snap to other points when moving (breaks the coradial illusion)
   - deleting an arc does not delete it's coradial constraint
   - deleting an arc does not delete it's guides
+
+  - create arc - click to create center point, click and drag to create 2nd point and bug.
+  - create line - click to create first point, click to create second point and bug.
+    - bug: shape's points get deleted somehow and element is either non-visible or deleted
 
   - Arc + clockwise + angle < 180 degrees results in the wrong arc (about a incorrect center point). Why? How do we fix this?
 

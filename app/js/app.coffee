@@ -8,7 +8,7 @@ $(document).bind "lastjs", ->
   $ribbon = $('#ribbon')
   $ribbon.find('.cmd').corner('round 5px').click (e) =>
     if $(e.target).hasClass('active') or $(e.target).hasClass('disabled') then return
-    $('.cmd').removeClass('active')
+    #$('.cmd').removeClass('active')
     #$(e.target).toggleClass('active')
     $('.sketch').sketch($(e.target).attr('cmd'))
 
