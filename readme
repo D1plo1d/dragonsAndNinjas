@@ -30,7 +30,7 @@ Features
 Bugs and Feature Improvements
 --------------------------------------------------------
 
-DONE (previous Top Priority ++9% items)
+DONE (previous Top Priority ++7% items)
 
   - Shape deletion [0 hr 30 min]
     - prevent wild fire deletion of all connected shapes. Only delete the currently selected shape. If a point's deletion is prevented by other shapes not currently being deleted hold off on deleting that point.
@@ -52,6 +52,10 @@ DONE (previous Top Priority ++9% items)
 
 Top Priority Bugs ++7%
 
+  - point merge should prefer explicit to implicit (ie merging a explicit point with a implicit should result in a explicit point)
+
+  - the mouse sometimes gets offset to the right of where the elements are being positioned.. wtf?
+
   - arc non-dragged points should not snap to other points when moving (breaks the coradial illusion)
   - deleting an arc does not delete it's coradial constraint
   - deleting an arc does not delete it's guides
@@ -59,6 +63,8 @@ Top Priority Bugs ++7%
   - create arc - click to create center point, click and drag to create 2nd point and bug.
   - create line - click to create first point, click to create second point and bug.
     - bug: shape's points get deleted somehow and element is either non-visible or deleted
+
+  - artifacting of points in svg. Happens on Geordie's box as well. WTF?
 
   - Arc + clockwise + angle < 180 degrees results in the wrong arc (about a incorrect center point). Why? How do we fix this?
 
@@ -69,12 +75,21 @@ Missing Features
 --------------------------------------------------------
 
 - Dimension tool UI and programatic interfaces ++5%
+  - drag the element to change it's line offset
+    - dragging text (make it a full fledged shape??)
+    - dragging line element [DONE]
+  - edit the dimension size by double clicking the text (or clicking?)
+  - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
+  - text sizing
+    - blank area should match number of digits
+    - vertical dimensions should have less room for the measurement numbers then horizontal dimensions.
 - Zoom ++4%
   - keyboard shortcuts (ctrl +, ctrl -)
   - gui buttons
   - scroll wheel
 - File Tab ++ 10%
   - redo + undo
+    - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
   - save as + load
 - Constraint Solver
   - initial implementation of constraints ++30%

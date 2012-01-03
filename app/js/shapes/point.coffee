@@ -117,7 +117,7 @@ $ -> $.shape "point",
     return if beforeMoveEvent.isDefaultPrevented()
 
     # move the element and trigger a move event
-    @$v = $v
+    @$v.elements[i] = $v.elements[i] for i in [0,1]
     @coincidentPoint = nearestPoint
     @element.attr @_attrs()
     @$node.trigger(jQuery.Event("move", point: this))

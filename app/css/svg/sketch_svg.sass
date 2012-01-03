@@ -47,3 +47,20 @@ tspan.explicit-point
 path.line, .arc, .circle, .ellipse
   stroke-width: 2px
 
+
+// Dimensions
+// =============================
+
+text.dimension-text tspan
+  font:
+    size: 18px
+    stroke: 3px
+    text-anchor: middle
+
+.dimension
+  cursor: pointer
+  stroke: #ccc
+  stroke-width: 2px
+  &:hover, &.selected
+    stroke: $active_color
+
