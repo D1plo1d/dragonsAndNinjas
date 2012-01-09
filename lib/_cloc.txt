@@ -1,3 +1,11 @@
+SASS
+    filter remove_matches ^\s*#
+    extension sass
+    3rd_gen_scale 0.90
+LESS
+    filter call_regexp_common C
+    extension less
+    3rd_gen_scale 1.00
 CoffeeScript
     filter remove_matches ^\s*#
     extension coffee
