@@ -88,24 +88,27 @@ $ -> $.shape "point",
 
 
   # move a point to a new absolute x/y position if it is not blocked by any constraints
-  move: ($v, triggerConstraints = true) ->
-    # alter the position to snap to nearby points if any exist
-    nearestDistance = Number.MAX_VALUE
+  move: ($v, triggerConstraints = true, snapping = true) ->
     nearestPoint = null
 
-    for point in @sketch._points
-      # check that the other point is not this point
-      continue if this == point
+    if snapping == true
+      # alter the position to snap to nearby points if any exist
+      nearestDistance = Number.MAX_VALUE
 
-      # check if the other point is within snapping distance of this point and it is the nearest point
-      distance = $v.distanceFrom(point.$v)
-      continue unless distance < @snappingDistance and distance < nearestDistance
+      for point in @sketch._points
+        # check that the other point is not this point
+        continue if this == point
 
-      nearestDistance = distance
-      nearestPoint = point
+        # check if the other point is within snapping distance of this point and it is the nearest point
+        distance = $v.distanceFrom(point.$v)
+        continue unless distance < @snappingDistance and distance < nearestDistance
 
-    # if a nearby snappable point was discovered, snap to it and record the 
-    $v = nearestPoint.$v if nearestPoint?
+        nearestDistance = distance
+        nearestPoint = point
+
+      # if a nearby snappable point was discovered, snap to it and record the 
+      $v = nearestPoint.$v if nearestPoint?
+
 
     # Trigger a before move event and return if preventDefault is called by any handlers
     # This can be used by things like constraints to effect the positioning of points

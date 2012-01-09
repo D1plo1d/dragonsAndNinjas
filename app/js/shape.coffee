@@ -63,7 +63,7 @@ class Shape
 
     # select all newly created shapes by default unless it is an implicit point
     # (in which case it will automatically be included in it's parent shapes' selection array)
-    @sketch.select(this) unless this.shapeType == "point" and this.options.type == "implicit"
+    @sketch.select(this) unless this.options.type == "implicit"
 
     # initializes a predefined point at index i if one exists
     loadPoint = (i) =>
@@ -93,7 +93,8 @@ class Shape
 
 
   # returns true if the shape is not fully defined and requiring gui interaction to fully define it.
-  _ui: (options) -> options == false or options.points.length < @numberOfPoints
+  _ui: (options) ->
+    return options == false or options.points? == false or options.points.length < @numberOfPoints
 
 
   # signals the end of the shapes creation (asynchronously triggers the "aftercreate" event for gui interaction)
@@ -188,8 +189,12 @@ class Shape
 
       # update the element only if it and all it's points exist
       if @points.length == @numberOfPoints and @element?
-        @element.attr @_attrs()
+        @render()
       return true
+
+
+  render: ->
+    @element.attr @_attrs()
 
 
   # gets updated raphael attributes as a hash.
@@ -199,6 +204,10 @@ class Shape
 
   _dragElement: -> return true
   _dropElement: -> return true
+
+
+  _unselect: -> null
+  _updateSelection: -> null
 
 
   # sets this shapes element to a new element with given attributes (optional) and initializes its event listeners and properties
@@ -213,7 +222,7 @@ class Shape
 
     # store the $node variable for the element
     @$node = $(@element.node)
-    @$node = $(@$node).find("tspan") if @raphaelType == "text"
+    @$node = $(@$node).find("tspan") if @raphaelType == "text" and this.shapeType == "point"
     @$node.addClass(this.shapeType)
 
     # drag and drop event listeners
@@ -254,7 +263,7 @@ class Shape
 
 # Glue to bind shapes to sketches
 $.shape = (shapeType, shapeHash) ->
-  console.log("shapifying #{shapeType}")
+  #console.log("shapifying #{shapeType}")
   shapeHash.shapeType = shapeType
 
   # Wrapping the create method so that parameters are in a good format

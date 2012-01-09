@@ -14,10 +14,12 @@ $ -> $.shape "dimension",
     when 0, 1
       @_addPoint().$node.one "aftercreate", => @_addNthPoint(@points.length)
       if n == 1
-        @_text = @sketch.paper.text(10,10, "0").hide()
-        $(@_text.node).addClass("dimension-text")
+        @_text = @sketch.text
+          type: "implicit"
+          text: "0"
+        @_text.$node.hide().addClass("dimension-text").bind("editstart", @_editTextStart)
         @_initElement()
-        @_text.show()
+        @_text.$node.show().bind("textdrag", @_dragText)
     when 2 # there is no point with index 2, finish the line creation
       @_afterCreate() if ui == true
 
@@ -36,12 +38,13 @@ $ -> $.shape "dimension",
       return "l#{coord(0)} m#{coord(1)}" if dir == 1
 
     # position the dimension's text at the line's midpoint
-    text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
+    @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
     length = tangent.distanceFrom(Vector.Zero(2))
     # TODO: proper persision
     length = Math.round(length*100)/100
     # TODO: proper units
-    @_text.attr( x: text_position.elements[0], y: text_position.elements[1], text: "#{length}mm" )
+    @_text.options.text = "#{length}mm"
+    @_text.move(@_text_position)
 
     # return the line, text and endcap path string
     textWidth = tangent.toUnitVector().x(100) # TODO: some legit text width calculation
@@ -49,15 +52,25 @@ $ -> $.shape "dimension",
     path: "M#{@points[0].$v.toPath()} #{endcap(1)} l#{halfLine} m#{textWidth.toPath()} l#{halfLine} #{endcap(-1)}"
 
 
+  # dragging the dimension's text has the same effect as dragging the dimension's lines
+  _dragText: (e, mouseVector) -> @_dragElement(e, mouseVector)
+
+
+  _updateVariables: ->
+    # TODO: share this code with the attrs method better
+    @_$vTangent = @points[1].$v.subtract(@points[0].$v)
+    @_$vUnitTangent = @_$vTangent.toUnitVector()
+    #hack to prevent even odder behaviour when we have zero length dimensions
+    @_$vUnitTangent.elements[0] = 1 if @_$vUnitTangent.distanceFrom(Vector.Zero(2)) == 0
+    @_$vNormal = $V [ -@_$vUnitTangent.elements[1], @_$vUnitTangent.elements[0] ]
+
+    @_$l = $L(@points[0].$v, @points[1].$v.subtract(@points[0].$v))
+
+
   # Update the dimension's measurement graphic offset to the distance from the line
   # between the two points to the mouse vector.
   _dragElement: (e, mouseVector) ->
-    # TODO: share this code with the attrs method better
-    @_$vTangent = @points[1].$v.subtract(@points[0].$v)
-    @_$vNormal = @_$vTangent.toUnitVector()
-    @_$vNormal.elements = [ -@_$vNormal.elements[1], @_$vNormal.elements[0] ]
-
-    @_$l = $L(@points[0].$v, @points[1].$v.subtract(@points[0].$v))
+    @_updateVariables()
 
     # calculating the offset as the distance from the mouse to the point of intersetion of a ray normal to the 
     # line containing the mouse vector.
@@ -71,6 +84,26 @@ $ -> $.shape "dimension",
     @element.attr @_attrs()
 
 
+  _editTextStart: (e, field) ->
+    $(field).requiredfield
+      dataType: "distance"
+      liveCheck: true
+      functionValidate: (val) -> val != 0
+
+    $(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
+
+
+  _textChange: ($field) ->
+    @_updateVariables()
+    length = $u($field.val()).as("mm").val()
+    @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
+    @render()
+
+
+  _updateSelection: ->
+    @sketch._selected.push(@_text) if @_text? and _.include(@sketch._selected, @_text) == false
+
+
   _afterDelete: () ->
-    $(@_text.node).unbind() if @_text?
-    @_text.remove()
+    @_text.delete() if @_text?
+

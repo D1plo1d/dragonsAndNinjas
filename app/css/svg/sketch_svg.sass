@@ -51,11 +51,15 @@ path.line, .arc, .circle, .ellipse
 // Dimensions
 // =============================
 
-text.dimension-text tspan
-  font:
-    size: 18px
-    stroke: 3px
-    text-anchor: middle
+text.dimension-text
+  cursor: pointer
+  tspan
+    font:
+      size: 18px
+      stroke-width: 3px
+      text-anchor: middle
+  &.selected tspan
+    //stroke: $active_color
 
 .dimension
   cursor: pointer

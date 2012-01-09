@@ -76,25 +76,36 @@ Missing Features
 
 - Dimension tool UI and programatic interfaces ++5%
   - drag the element to change it's line offset
-    - dragging text (make it a full fledged shape??)
+    - dragging text (make it a full fledged shape??) [DONE]
     - dragging line element [DONE]
-  - edit the dimension size by double clicking the text (or clicking?)
+  - edit the dimension size
+    - clicking the text opens a field overlaying the text [DONE]
+    - the field is saved by pressing enter or deselecting. [DONE]
+    - the field is regex'd as a measurement [DONE]
+    - whenever a valid measurement is entered the dimension size updates. [DONE]
   - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
   - text sizing
-    - blank area should match number of digits
+    - blank area should match number of digits (text method: getSize() -> $v)
     - vertical dimensions should have less room for the measurement numbers then horizontal dimensions.
+  - dimension lines should select when a dimension text is selected.
+
 - Zoom ++4%
   - keyboard shortcuts (ctrl +, ctrl -)
   - gui buttons
   - scroll wheel
-- File Tab ++ 10%
+
+- SVG should automatically scale and resize to take up the full screen ++2%
+
+- File Tab ++9%
   - redo + undo
     - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
   - save as + load
+
 - Constraint Solver
   - initial implementation of constraints ++30%
   - resulting bugs and feature improvements ++40%
-- QTip2 Tutorial ++4%
+
+- QTip2 Tutorial ++3%
   - choose a shape you wish to create.
   - draw you shape on the screen by clicking to place each of it's points.
   - you can now create more shapes or click on an existing shape or point to move it.

@@ -17,9 +17,7 @@ $(document).bind "lastjs", ->
 
   # Sketch
   # ===============================
-  console.log "sketch?"
   $('.sketch').sketch()
-  console.log "sketch!"
 
   # Context Menu
   # ===============================

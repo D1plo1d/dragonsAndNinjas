@@ -23,7 +23,6 @@ $.widget "ui.sketch", $.ui.mouse,
 
 
   _create: ->
-    console.log "init"
     this.paper = Raphael(this.element[0])
     this.root = this.paper.set()
     this.$svg = this.element.find("svg")
@@ -64,6 +63,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @_selected = _.uniq( _.union( @_selected, @_selectedChildPoints() ) )
     for s in @_selected
       s.$node.toggleClass("selected", true) if s.$node?
+      s._updateSelection()
       s.element.toFront() if s.element?
 
 
@@ -72,6 +72,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @cancel()
     for s in @_selected
       s.$node.toggleClass("selected", false) if s.$node?
+      s._unselect()
     @_selected = null
     @$svg.trigger("unselect")
 
@@ -100,7 +101,6 @@ $.widget "ui.sketch", $.ui.mouse,
   # Controller
   # ==================================
   _initController: ->
-    console.log "init controller"
     this.element.mousedown => this.unselect()
     #this.$svg.draggable()
 
