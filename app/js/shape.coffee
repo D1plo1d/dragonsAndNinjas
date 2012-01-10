@@ -245,9 +245,11 @@ class Shape
       return true unless @_created == true
       # prevent drag and drop if we are unable to select this shape
       return true unless @sketch.select(this)
-      @$node.trigger("beforeDrag", this) if @$node?
       @dragging = true
+      # wait 100ms to see if this is a click or a drag.
+      _.delay @_delayedMouseDown, 100
       return false
+
 
     # ignore mouse downs if we are dragging the element
     # (so that we can click to place it and not accidently trigger svg dragging)
@@ -259,6 +261,15 @@ class Shape
       @_dropElement()
       @$node.trigger("afterDrop", this) if @$node?
       return false
+
+
+  _delayedMouseDown: ->
+    if @dragging == true
+      @$node.trigger("beforeDrag", this) if @$node?
+    else
+      @$node.trigger "clickshape"
+
+
 
 
 # Glue to bind shapes to sketches

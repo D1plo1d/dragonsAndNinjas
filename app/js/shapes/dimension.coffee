@@ -1,6 +1,9 @@
 $ -> $.shape "dimension",
   numberOfPoints: 2
   raphaelType: "path"
+  textPadding:
+    x: 10
+    y: 5
   options:
     offset: 30
 
@@ -18,6 +21,7 @@ $ -> $.shape "dimension",
           type: "implicit"
           text: "0"
         @_text.$node.hide().addClass("dimension-text").bind("editstart", @_editTextStart)
+        @_text.parent = this
         @_initElement()
         @_text.$node.show().bind("textdrag", @_dragText)
     when 2 # there is no point with index 2, finish the line creation
@@ -28,6 +32,7 @@ $ -> $.shape "dimension",
     tangent = @points[1].$v.subtract(@points[0].$v)
     normal = tangent.toUnitVector()
     normal.elements = [ -normal.elements[1], normal.elements[0] ]
+    @_$vUnitTangent = tangent.toUnitVector()
 
     # calculate the endcap path strings
     direction = if @options.offset > 0 then 1 else -1
@@ -40,16 +45,32 @@ $ -> $.shape "dimension",
     # position the dimension's text at the line's midpoint
     @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
     length = tangent.distanceFrom(Vector.Zero(2))
-    # TODO: proper persision
+    # TODO: proper precision
     length = Math.round(length*100)/100
     # TODO: proper units
     @_text.options.text = "#{length}mm"
-    @_text.move(@_text_position)
+    @_text.updateText()
+
+    # get the width of the text along the dimension's line (so we can allocate it some whitespace accordingly)
+    textWidth = 0
+    textWidth += Math.abs((@_text.$node.width()+@textPadding["x"])*@_$vUnitTangent.elements[0])
+    textWidth += Math.abs((@_text.$node.height()+@textPadding["y"])*@_$vUnitTangent.elements[1])
+    $vTextWidth = @_$vUnitTangent.x(textWidth) # TODO: some legit text width calculation
 
     # return the line, text and endcap path string
-    textWidth = tangent.toUnitVector().x(100) # TODO: some legit text width calculation
-    halfLine = tangent.subtract(textWidth).x(0.5).toPath()
-    path: "M#{@points[0].$v.toPath()} #{endcap(1)} l#{halfLine} m#{textWidth.toPath()} l#{halfLine} #{endcap(-1)}"
+    $vHalfLine = tangent.subtract($vTextWidth).x(0.5)
+    halfLine = $vHalfLine.toPath()
+
+    # if the dimension is to small to fit a line and the text hide 
+    # the line and show the text offset from the line instead.
+    if $vHalfLine.isAntiparallelTo(tangent)
+      @_text_position = @_text_position.add( normal.x(30) ) # offsetting the text
+      path = "M#{@points[0].$v.toPath()} #{endcap(1)} m#{tangent.toPath()} #{endcap(-1)}"
+    # if the dimension is big enough show the text inline with the line.
+    else
+      path = "M#{@points[0].$v.toPath()} #{endcap(1)} l#{halfLine} m#{$vTextWidth.toPath()} l#{halfLine} #{endcap(-1)}"
+    @_text.move(@_text_position)
+    return path: path
 
 
   # dragging the dimension's text has the same effect as dragging the dimension's lines

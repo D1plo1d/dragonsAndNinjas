@@ -30,6 +30,24 @@ Features
 Bugs and Feature Improvements
 --------------------------------------------------------
 
+DONE (previous major features)
+
+- Dimension tool UI and programatic interfaces ++5%
+  - drag the element to change it's line offset
+    - dragging text (make it a full fledged shape??) [DONE]
+    - dragging line element [DONE]
+  - edit the dimension size
+    - clicking the text opens a field overlaying the text [DONE]
+    - the field is saved by pressing enter or deselecting. [DONE]
+    - the field is regex'd as a measurement [DONE]
+    - whenever a valid measurement is entered the dimension size updates. [DONE]
+  - text sizing
+    - blank area should match number of digits (text method: getSize() -> $v) [DONE]
+    - vertical dimensions should have less room for the measurement numbers then horizontal dimensions. [DONE]
+  - dimension lines should select when a dimension text is selected. [DONE]
+  - small dimensions should offset their text so the dimension's text doesn't overlap the dimension's line.
+
+
 DONE (previous Top Priority ++7% items)
 
   - Shape deletion [0 hr 30 min]
@@ -74,25 +92,13 @@ Top Priority Bugs ++7%
 Missing Features
 --------------------------------------------------------
 
-- Dimension tool UI and programatic interfaces ++5%
-  - drag the element to change it's line offset
-    - dragging text (make it a full fledged shape??) [DONE]
-    - dragging line element [DONE]
-  - edit the dimension size
-    - clicking the text opens a field overlaying the text [DONE]
-    - the field is saved by pressing enter or deselecting. [DONE]
-    - the field is regex'd as a measurement [DONE]
-    - whenever a valid measurement is entered the dimension size updates. [DONE]
-  - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
-  - text sizing
-    - blank area should match number of digits (text method: getSize() -> $v)
-    - vertical dimensions should have less room for the measurement numbers then horizontal dimensions.
-  - dimension lines should select when a dimension text is selected.
-
 - Zoom ++4%
   - keyboard shortcuts (ctrl +, ctrl -)
   - gui buttons
   - scroll wheel
+  - resizing
+    - text resizing (for consistant screen text size)
+    - dimension spacing re-rendering (based on text size changes)
 
 - SVG should automatically scale and resize to take up the full screen ++2%
 
@@ -114,6 +120,7 @@ To Do List
 ========================================================
 
 Everything Else
+  - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
   - dimension tool (shape)
   - show guides on select. hide guides on deselect (unless it's being created)
   - file tab (save, load, undo, redo) <- (just the ui)

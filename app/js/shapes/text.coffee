@@ -1,4 +1,5 @@
 $ -> $.shape "text",
+  parent: null
   numberOfPoints: 0
   raphaelType: "text"
   options:
@@ -15,13 +16,20 @@ $ -> $.shape "text",
         @_initElement()
         @_afterCreate()
 
-      @$node.click @_clickElement
+      @$node.bind "clickshape", @_clickElement
+
+      # hack for parent shapes.. something should be done at the shape level to allow for child shapes
+      @$node.hover (e) =>
+        console.log e.type
+        @parent.$node.toggleClass("hover", e.type == "mouseenter") if @parent? and @parent.$node?
 
 
   _ui: -> false
 
 
   _attrs: -> x: @options.$v.elements[0], y: @options.$v.elements[1], text: @options.text
+
+  updateText: -> @element.attr text: @options.text
 
 
   move: ($v) ->
@@ -31,6 +39,8 @@ $ -> $.shape "text",
 
 
   _clickElement: (e) ->
+    @sketch.select(this)
+    @sketch.updateSelection()
     return if @_$textField?
     @_$textField = $($("<input type='text' class='sketch-text-edit-field'></input>").appendTo("body"))
     @_$textField.attr("value", @options.text).focus()
@@ -45,6 +55,10 @@ $ -> $.shape "text",
     for position, v of (left: ["width", +1], top: ["height", -1])
       positions[position] = positions[position] + v[1]*( @$node[v[0]]() - @_$textField[v[0]]() ) /2
     @_$textField.css left: positions.left, top: positions.top
+
+
+  _updateSelection: ->
+    @sketch._selected.push(@parent) if @parent? and _.include(@sketch._selected, @parent) == false
 
 
   _unselect: -> @_closeTextField()
