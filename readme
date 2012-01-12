@@ -88,19 +88,23 @@ Top Priority Bugs ++7%
 
   - sometimes in arc creation you need to click twice before you place the 3rd point
 
+  - when you click and drag an element and then move the mouse off screen and release the element continues to be dragged. In these lost focus situations it would be better to stop dragging the element and treat it as a mouse up event.
+
 
 Missing Features
 --------------------------------------------------------
 
 - Zoom ++4%
-  - keyboard shortcuts (ctrl +, ctrl -)
-  - gui buttons
-  - scroll wheel
+  - keyboard shortcuts (- and + because ctrl+ and ctrl- are firmly bound to the browser atm) [DONE]
+  - scroll wheel [DONE]
   - resizing
     - text resizing (for consistant screen text size)
     - dimension spacing re-rendering (based on text size changes)
+    - line thickness rescaling (line thickness should be consistent regardless of zoom)
 
-- SVG should automatically scale and resize to take up the full screen ++2%
+- SVG + HTML improvements ++2%
+  - SVG should automatically scale and resize to take up the full screen
+  - The page should never scroll (even if a dimension's text field is way out in the middle of nowhere).
 
 - File Tab ++9%
   - redo + undo
@@ -120,6 +124,7 @@ To Do List
 ========================================================
 
 Everything Else
+  - zoom in/out gui buttons
   - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
   - dimension tool (shape)
   - show guides on select. hide guides on deselect (unless it's being created)

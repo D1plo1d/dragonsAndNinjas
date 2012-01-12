@@ -24,8 +24,15 @@ $ -> $.shape "dimension",
         @_text.parent = this
         @_initElement()
         @_text.$node.show().bind("textdrag", @_dragText)
+        @sketch.$svg.bind "zoomchange", @_zoomChange
+
     when 2 # there is no point with index 2, finish the line creation
       @_afterCreate() if ui == true
+
+
+  _zoomChange: (e) ->
+    @render()
+    return true
 
 
   _attrs: ->
@@ -50,6 +57,8 @@ $ -> $.shape "dimension",
     # TODO: proper units
     @_text.options.text = "#{length}mm"
     @_text.updateText()
+    @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
+
 
     # get the width of the text along the dimension's line (so we can allocate it some whitespace accordingly)
     textWidth = 0
@@ -64,7 +73,7 @@ $ -> $.shape "dimension",
     # if the dimension is to small to fit a line and the text hide 
     # the line and show the text offset from the line instead.
     if $vHalfLine.isAntiparallelTo(tangent)
-      @_text_position = @_text_position.add( normal.x(30) ) # offsetting the text
+      @_text_position = @_text_position.add( normal.x(10 + @_text.$node.height()/2 + @textPadding["y"]) ) # offsetting the text
       path = "M#{@points[0].$v.toPath()} #{endcap(1)} m#{tangent.toPath()} #{endcap(-1)}"
     # if the dimension is big enough show the text inline with the line.
     else

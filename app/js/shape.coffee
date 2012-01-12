@@ -228,12 +228,15 @@ class Shape
     # drag and drop event listeners
     $svg = this.sketch.$svg
     $svg.bind "mousemove", (e) =>
-      return true unless this.dragging == true
+      return true unless @dragging == true
 
       top = this.sketch.element.position().top
-      mouseV = $V([e.pageX - this.sketch._position[0], e.pageY - this.sketch._position[1] - top])
+      mouseV = $V [e.pageX, e.pageY - top]
+      mouseV = mouseV.x(@sketch._zoom.positionMultiplier)
+      mouseV = mouseV.subtract($V @sketch._position)
+      mouseV = mouseV.add($V @sketch._zoom.positionOffset)
 
-      this._dragElement(e, mouseV)
+      @_dragElement(e, mouseV)
 
       return true
 

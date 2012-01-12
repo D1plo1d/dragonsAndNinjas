@@ -20,7 +20,6 @@ $ -> $.shape "text",
 
       # hack for parent shapes.. something should be done at the shape level to allow for child shapes
       @$node.hover (e) =>
-        console.log e.type
         @parent.$node.toggleClass("hover", e.type == "mouseenter") if @parent? and @parent.$node?
 
 

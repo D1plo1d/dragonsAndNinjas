@@ -18,26 +18,63 @@ $.widget "ui.sketch", $.ui.mouse,
   # the position of the sketch relative to the screen
   _position: [0,0]
 
+  # the zoom model
+  _zoom:
+    value: 0
+    defaultValue: 0
+    defaultIncrement: 1
+    mouseWheelIncrement: 0.5
+    # the amount to multiply pixel movements of the mouse by to get zoom-relative sketch movements.
+    # Calculated by _updateViewBox
+    positionMultiplier: 1
+    positionOffset: [0,0]
+
   # Model
   # ==================================
 
 
   _create: ->
-    this.paper = Raphael(this.element[0])
-    this.root = this.paper.set()
-    this.$svg = this.element.find("svg")
-    this._initController()
+    @paper = Raphael(this.element[0])
+    @root = @paper.set()
+    @$svg = @element.find("svg")
+    @_initController()
+    @_updateViewBox()
 
+
+  # inner method for reconfiguring the zoom port when the position or zoom changes
+  _updateViewBox: ->
+    @_zoom.positionMultiplier = Math.pow( 2, -1 * @_zoom.value )
+    outerDimensions = ( @element[d]() for d in ["width", "height"] )
+    viewportDimensions = ( d*@_zoom.positionMultiplier for d in outerDimensions )
+    @_zoom.positionOffset = (outerDimensions[i]/2 - viewportDimensions[i]/2  for i in [0, 1])
+    center = ( -1 * @_position[i] + @_zoom.positionOffset[i] for i in [0,1] )
+    @paper.setViewBox(center[0], center[1], viewportDimensions[0], viewportDimensions[1], true)
+  
 
   # sets the sketch's x,y position relative to the screen
   set_position: (position) ->
-    this.paper.setViewBox(-position[0], -position[1], this.element.width(), this.element.height(), true)
-    this._position = position
+    @_position = position
+    @_updateViewBox()
 
 
   # zooms the plane towards/away from the camera (- is towards the camera)
-  zoom: (zoom) ->
-    console.log "zoom"
+  zoom: (zoom) -> # zoom = ++ or -- or a number to increment the current zoom by.
+    if zoom == "++" or zoom == "--"
+      @_zoom.value += (if zoom == "++" then +1 else -1) * @_zoom.defaultIncrement
+    else
+      @_zoom.value += zoom
+    @_zoomChange()
+
+  # sets the zoom to a absolute position (not relative to the previous zoom) or the default if 
+  # zoom is undefined
+  resetZoom: (zoom) ->
+    @_zoom.value = (if zoom? then zoom else @_zoom.defaultValue)
+    @_zoomChange()
+
+
+  _zoomChange: ->
+    @._updateViewBox()
+    @$svg.trigger("zoomchange")
 
 
   # element selection
@@ -112,8 +149,19 @@ $.widget "ui.sketch", $.ui.mouse,
   # -------------------------------
 
   _keyboardInit: ->
+    # Delete and Cancel
     $(document).bind "keyup", "del", => @delete()
     $(document).bind "keyup", "esc", => @cancel()
+
+    # Zoom
+    $(document).bind "keypress", "+", =>
+      @zoom("++")
+      return false
+    $(document).bind "keypress", "-", =>
+      @zoom("--")
+      return false
+    @$svg.mousewheel _.throttle ( (a,b,c,d) => @_mouseWheel(a,b,c,d) ), 20
+
 
     # TODO: move this to shape or line?
     @shift = false
@@ -127,15 +175,20 @@ $.widget "ui.sketch", $.ui.mouse,
   # Mouse interactions
   # -------------------------------
 
+  _mouseWheel: (event, delta, deltaX, deltaY) ->
+    @zoom( @_zoom.mouseWheelIncrement * delta )
+    event.preventDefault()
+    return true
+
   _mouseStart: (e) ->
-    this._dragging = $(e.target).is("svg")
-    pos = this._position
-    this._sketch_offset_click_pos =  [ e.pageX - pos[0], e.pageY - pos[1] ]
+    @_dragging = $(e.target).is("svg")
+    pos = @_position
+    @_sketch_offset_click_pos =  [ e.pageX*@_zoom.positionMultiplier - pos[0], e.pageY*@_zoom.positionMultiplier - pos[1] ]
 
 
   _mouseDrag: (e) ->
-    return true unless this._dragging == true
+    return true unless @_dragging == true
     # translate the sketch by [deltaX, deltaY]
-    p = [e.pageX - this._sketch_offset_click_pos[0], e.pageY - this._sketch_offset_click_pos[1] ]
-    this.set_position p
+    p = [e.pageX*@_zoom.positionMultiplier - @_sketch_offset_click_pos[0], e.pageY*@_zoom.positionMultiplier - @_sketch_offset_click_pos[1] ]
+    @set_position p
 
