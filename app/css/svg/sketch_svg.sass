@@ -12,6 +12,7 @@ $active_color: #37D
 .line, .arc, .circle, .ellipse
   cursor: pointer
   stroke: $inactive_color
+  stroke-width: 2px
   &:hover, &.selected
     stroke: $active_color
 
@@ -20,6 +21,7 @@ $active_color: #37D
   fill: $active_color
 
 .creation-guide
+  stroke-width: 1px
   stroke-dasharray: 4, 4
 
 
@@ -37,15 +39,15 @@ tspan.explicit-point
   font:
     size: 29px
     weight: bold
-    stroke: 3px
+    stroke-width: 1px
     text-anchor: middle
 
 
 // Lines
 // =============================
 
-path.line, .arc, .circle, .ellipse
-  stroke-width: 2px
+//path.line, .arc, .circle, .ellipse
+//  stroke-width: 2px
 
 
 // Dimensions
@@ -55,7 +57,7 @@ text.dimension-text
   cursor: pointer
   font:
     size: 18px
-    stroke-width: 3px
+    //stroke-width: 3px
     text-anchor: middle
   &.selected
     //stroke: $active_color
@@ -63,7 +65,7 @@ text.dimension-text
 .dimension
   cursor: pointer
   stroke: #ccc
-  stroke-width: 2px
+  //stroke-width: 2px
   &:hover, &.selected, &.hover
     stroke: $active_color
 

@@ -227,38 +227,30 @@ class Shape
 
     # drag and drop event listeners
     $svg = this.sketch.$svg
-    $svg.bind "mousemove", (e) =>
+    $svg.bind "sketchmousemove", (e, $vMouse) =>
       return true unless @dragging == true
-
-      top = this.sketch.element.position().top
-      mouseV = $V [e.pageX, e.pageY - top]
-      mouseV = mouseV.x(@sketch._zoom.positionMultiplier)
-      mouseV = mouseV.subtract($V @sketch._position)
-      mouseV = mouseV.add($V @sketch._zoom.positionOffset)
-
-      @_dragElement(e, mouseV)
-
+      @_dragElement(e, $vMouse)
       return true
 
     # if this shape is selected style it appropriately
     @sketch.updateSelection()
 
 
-    this.$node.bind "mousedown", (e) =>
+    this.$node.bind "sketchmousedown", (e, $vMouse) =>
       return true unless @_created == true
       # prevent drag and drop if we are unable to select this shape
       return true unless @sketch.select(this)
       @dragging = true
       # wait 100ms to see if this is a click or a drag.
-      _.delay @_delayedMouseDown, 100
+      _.delay @_delayedMouseDown, 100, $vMouse
       return false
 
 
     # ignore mouse downs if we are dragging the element
     # (so that we can click to place it and not accidently trigger svg dragging)
-    @sketch.$svg.bind "mousedown", (e) => return @dragging != true
+    @sketch.$svg.bind "sketchmousedown", (e, $vMouse) => return @dragging != true
 
-    @sketch.$svg.bind "mouseup", (e) =>
+    @sketch.$svg.bind "sketchmouseup", (e, $vMouse) =>
       return true unless @dragging == true
       @dragging = false
       @_dropElement()
@@ -266,11 +258,11 @@ class Shape
       return false
 
 
-  _delayedMouseDown: ->
+  _delayedMouseDown: ($vMouse) ->
     if @dragging == true
       @$node.trigger("beforeDrag", this) if @$node?
     else
-      @$node.trigger "clickshape"
+      @$node.trigger "clickshape", $vMouse
 
 
 

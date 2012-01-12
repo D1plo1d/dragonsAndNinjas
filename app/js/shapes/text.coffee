@@ -37,7 +37,7 @@ $ -> $.shape "text",
     @render()
 
 
-  _clickElement: (e) ->
+  _clickElement: (e, $vMouse) ->
     @sketch.select(this)
     @sketch.updateSelection()
     return if @_$textField?
@@ -50,10 +50,19 @@ $ -> $.shape "text",
 
   _updateTextField: ->
     return unless @_$textField?
-    positions = @$node.offset()
-    for position, v of (left: ["width", +1], top: ["height", -1])
-      positions[position] = positions[position] + v[1]*( @$node[v[0]]() - @_$textField[v[0]]() ) /2
-    @_$textField.css left: positions.left, top: positions.top
+    $vPosition = $V [ @$node.attr("x"), @$node.attr("y") ]
+
+    # todo: move this to an inverse camera matrix function in sketch
+    top = @sketch.element.position().top
+    $vPosition = $vPosition.subtract($V @sketch._zoom.positionOffset)
+    $vPosition = $vPosition.add($V @sketch._position)
+    $vPosition = $vPosition.x(1 / @sketch._zoom.positionMultiplier)
+    $vPosition = $vPosition.add($V [0, top])
+
+
+    for i, v of ([ ["width", -1], ["height", -1] ])
+      $vPosition.elements[i] -= 0.5 * @$node[v[0]]() / @sketch._zoom.positionMultiplier
+    @_$textField.css left: $vPosition.elements[0], top: $vPosition.elements[1]
 
 
   _updateSelection: ->
@@ -72,9 +81,9 @@ $ -> $.shape "text",
     @render()
 
 
-  _dragElement: (e, mouseVector) ->
-    @$v.elements = mouseVector.elements if @options.type == "explicit"
-    @$node.trigger("textdrag", mouseVector) if @$node?
+  _dragElement: (e, $vMouse) ->
+    @$v.elements = $vMouse.elements if @options.type == "explicit"
+    @$node.trigger("textdrag", $vMouse) if @$node?
 
 
   _afterDelete: () ->

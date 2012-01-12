@@ -22,8 +22,8 @@ $.widget "ui.sketch", $.ui.mouse,
   _zoom:
     value: 0
     defaultValue: 0
-    defaultIncrement: 1
-    mouseWheelIncrement: 0.5
+    defaultIncrement: 0.5
+    mouseWheelIncrement: 0.25
     # the amount to multiply pixel movements of the mouse by to get zoom-relative sketch movements.
     # Calculated by _updateViewBox
     positionMultiplier: 1
@@ -39,6 +39,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @$svg = @element.find("svg")
     @_initController()
     @_updateViewBox()
+    @_rescaleElementsToZoom()
 
 
   # inner method for reconfiguring the zoom port when the position or zoom changes
@@ -72,8 +73,24 @@ $.widget "ui.sketch", $.ui.mouse,
     @_zoomChange()
 
 
+  _rescaleElementsToZoom: () ->
+    m = @_zoom.positionMultiplier
+    # rescale all the lines to the new zoom
+    $2pxElements = $("svg .line, .arc, .circle, .ellipse, .dimension")
+    $2pxElements.globalcss "stroke-width", 2 * m
+
+    $guides = $("svg .creation-guide")
+    $guides.globalcss "stroke-width", 1 * m
+    $guides.globalcss "stroke-dasharray", "#{4 * m}, #{4 * m}"
+
+    $explicitPoint = $("svg .explicit-point")
+    $explicitPoint.globalcss "stroke-width", 1 * m
+    $explicitPoint.globalcss "font-size", 29 * m
+
+
   _zoomChange: ->
     @._updateViewBox()
+    @_rescaleElementsToZoom()
     @$svg.trigger("zoomchange")
 
 
@@ -138,7 +155,12 @@ $.widget "ui.sketch", $.ui.mouse,
   # Controller
   # ==================================
   _initController: ->
-    this.element.mousedown => this.unselect()
+
+    this.element.mouseup   (e) => $(e.target).trigger "sketchmouseup",   @_$vMouse(e)
+    this.element.mousedown (e) => $(e.target).trigger "sketchmousedown", @_$vMouse(e)
+    this.element.mousemove (e) => $(e.target).trigger "sketchmousemove", @_$vMouse(e)
+
+    this.element.bind "sketchmousedown", => @unselect()
     #this.$svg.draggable()
 
     this._mouseInit()
@@ -175,6 +197,17 @@ $.widget "ui.sketch", $.ui.mouse,
   # Mouse interactions
   # -------------------------------
 
+  # Calculates a sketch-relative position vector for mouse events accounting for translation and scaling
+  _$vMouse: (e) ->
+    top = @element.position().top
+    # Determining if e is a jQuery Event object or a Raphael Vector object
+    $vMouse = if e.target? then $V([e.pageX, e.pageY]) else e
+
+    $vMouse = $vMouse.subtract($V [0, top])
+    $vMouse = $vMouse.x(@_zoom.positionMultiplier)
+    $vMouse = $vMouse.subtract($V @_position)
+    $vMouse = $vMouse.add($V @_zoom.positionOffset)
+
   _mouseWheel: (event, delta, deltaX, deltaY) ->
     @zoom( @_zoom.mouseWheelIncrement * delta )
     event.preventDefault()
@@ -182,13 +215,12 @@ $.widget "ui.sketch", $.ui.mouse,
 
   _mouseStart: (e) ->
     @_dragging = $(e.target).is("svg")
-    pos = @_position
-    @_sketch_offset_click_pos =  [ e.pageX*@_zoom.positionMultiplier - pos[0], e.pageY*@_zoom.positionMultiplier - pos[1] ]
+    @_$vSketchClick =  @_$vMouse(e)
 
 
   _mouseDrag: (e) ->
     return true unless @_dragging == true
     # translate the sketch by [deltaX, deltaY]
-    p = [e.pageX*@_zoom.positionMultiplier - @_sketch_offset_click_pos[0], e.pageY*@_zoom.positionMultiplier - @_sketch_offset_click_pos[1] ]
-    @set_position p
+    p = @_$vMouse(e).subtract(@_$vSketchClick).add($V @_position)
+    @set_position p.elements
 

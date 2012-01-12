@@ -43,7 +43,14 @@ $ -> $.shape "dimension",
 
     # calculate the endcap path strings
     direction = if @options.offset > 0 then 1 else -1
-    endcapPoints = ( normal.x(distance) for distance in [ @options.offset + 10*direction, -10*direction ] )
+    endcapLength = 10 * @sketch._zoom.positionMultiplier
+
+    endcapDistances = []
+    endcapDistances[0] = @options.offset + endcapLength*direction
+    endcapDistances[1] = -endcapLength*direction
+
+    endcapPoints = ( normal.x(distance) for distance in endcapDistances )
+
     endcap = (dir) =>
       coord = (index, d = dir) => "#{endcapPoints[index].x(d).toPath()}"
       return "m#{coord(1)} l#{coord(0)}" if dir == -1
@@ -62,8 +69,8 @@ $ -> $.shape "dimension",
 
     # get the width of the text along the dimension's line (so we can allocate it some whitespace accordingly)
     textWidth = 0
-    textWidth += Math.abs((@_text.$node.width()+@textPadding["x"])*@_$vUnitTangent.elements[0])
-    textWidth += Math.abs((@_text.$node.height()+@textPadding["y"])*@_$vUnitTangent.elements[1])
+    textWidth += Math.abs((@_text.$node.width()+@textPadding["x"]*@sketch._zoom.positionMultiplier)*@_$vUnitTangent.elements[0])
+    textWidth += Math.abs((@_text.$node.height()+@textPadding["y"]*@sketch._zoom.positionMultiplier)*@_$vUnitTangent.elements[1])
     $vTextWidth = @_$vUnitTangent.x(textWidth) # TODO: some legit text width calculation
 
     # return the line, text and endcap path string
@@ -73,8 +80,12 @@ $ -> $.shape "dimension",
     # if the dimension is to small to fit a line and the text hide 
     # the line and show the text offset from the line instead.
     if $vHalfLine.isAntiparallelTo(tangent)
-      @_text_position = @_text_position.add( normal.x(10 + @_text.$node.height()/2 + @textPadding["y"]) ) # offsetting the text
+      # offsetting the text
+      textOffset = endcapLength + @_text.$node.height()/2 + @textPadding["y"]
+      @_text_position = @_text_position.add( normal.x(textOffset) )
+
       path = "M#{@points[0].$v.toPath()} #{endcap(1)} m#{tangent.toPath()} #{endcap(-1)}"
+
     # if the dimension is big enough show the text inline with the line.
     else
       path = "M#{@points[0].$v.toPath()} #{endcap(1)} l#{halfLine} m#{$vTextWidth.toPath()} l#{halfLine} #{endcap(-1)}"
@@ -83,7 +94,7 @@ $ -> $.shape "dimension",
 
 
   # dragging the dimension's text has the same effect as dragging the dimension's lines
-  _dragText: (e, mouseVector) -> @_dragElement(e, mouseVector)
+  _dragText: (e, $vMouse) -> @_dragElement(e, $vMouse)
 
 
   _updateVariables: ->
@@ -99,12 +110,12 @@ $ -> $.shape "dimension",
 
   # Update the dimension's measurement graphic offset to the distance from the line
   # between the two points to the mouse vector.
-  _dragElement: (e, mouseVector) ->
+  _dragElement: (e, $vMouse) ->
     @_updateVariables()
 
     # calculating the offset as the distance from the mouse to the point of intersetion of a ray normal to the 
     # line containing the mouse vector.
-    $vOffset = mouseVector.to3D().subtract( @_$l.intersectionWith( $L(mouseVector, @_$vNormal) ) )
+    $vOffset = $vMouse.to3D().subtract( @_$l.intersectionWith( $L($vMouse, @_$vNormal) ) )
     # offset distance
     @options.offset = $vOffset.distanceFrom(Vector.Zero(3))
     # offset direction

@@ -24,7 +24,7 @@ $ -> $.shape "point",
 
   _initVector: (ui) ->
     if ui == true
-      @$v = $V([window.x, window.y])
+      @$v = @sketch._$vMouse( $V [window.x, window.y] )
     else
       @$v = if ( v = @options.$v )? then v else $V([@options.x, @options.y])
 
@@ -37,14 +37,13 @@ $ -> $.shape "point",
       @raphaelType = "circle"
       @xyPrefix = "c"
 
+    @sketch.$svg.bind "zoomchange", @_zoomChange
     attrs = @_attrs()
 
     # appending the initialization constraints that aren't
     # normally included in attrs after initializing the element.
     if @options.type == "explicit"
       attrs["text"] = "*"
-    else
-      attrs["radius"] = @radius
 
     # initializing the svg element
     @_initElement(attrs)
@@ -56,6 +55,7 @@ $ -> $.shape "point",
     attrs = {}
     attrs["#{@xyPrefix}x"] = @$v.elements[0]
     attrs["#{@xyPrefix}y"] = @$v.elements[1]
+    attrs["r"] = (@radius * @sketch._zoom.positionMultiplier) if @options.type == "implicit"
     return attrs
 
 
@@ -63,6 +63,11 @@ $ -> $.shape "point",
 
 
   y: -> @$v.elements[1] #gets y
+
+
+  _zoomChange: () ->
+    @render()
+    return true
 
 
   merge: (point) ->
@@ -92,6 +97,7 @@ $ -> $.shape "point",
     nearestPoint = null
 
     if snapping == true
+      snappingDistance = @snappingDistance * @sketch._zoom.positionMultiplier
       # alter the position to snap to nearby points if any exist
       nearestDistance = Number.MAX_VALUE
 
@@ -101,7 +107,7 @@ $ -> $.shape "point",
 
         # check if the other point is within snapping distance of this point and it is the nearest point
         distance = $v.distanceFrom(point.$v)
-        continue unless distance < @snappingDistance and distance < nearestDistance
+        continue unless distance < snappingDistance and distance < nearestDistance
 
         nearestDistance = distance
         nearestPoint = point
