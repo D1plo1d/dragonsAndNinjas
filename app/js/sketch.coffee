@@ -29,6 +29,12 @@ $.widget "ui.sketch", $.ui.mouse,
     positionMultiplier: 1
     positionOffset: [0,0]
 
+  # An array of all the points in the sketch
+  _points: []
+  # An array of all the shapes in the sketch
+  _shapes: []
+
+
   # Model
   # ==================================
 
@@ -152,6 +158,36 @@ $.widget "ui.sketch", $.ui.mouse,
     return unless @hasSelection()
     s.delete() for s in @_selectedParentShapes()
     @unselect()
+
+
+  serialize: (format = "yaml") ->
+    console.log format
+    console.log "mooo" if format == "yaml"
+    meta = { version: "0.0.0 Mega-Beta" }
+    shapes = ( shape.serialize() for shape in @_shapes )
+    serialization_hash = {meta: meta, shapes: shapes}
+
+    return serialization_hash if format == "hash"
+    # yamlize the results
+    console.log YAML.dump(serialization_hash)
+    return YAML.dump(serialization_hash) if format == "yaml"
+
+
+  deserialize: (obj, format = "yaml") ->
+    hash = obj if format == "hash"
+    hash = jsyaml.load(obj) if format == "yaml"
+
+    # TODO: load in each object and stuffs
+
+
+  save: ->
+    # todo: write to file.
+    @serialize("yaml")
+
+
+  load: ->
+    str = "" # TODO: loading files from somewhere
+    @deserialize(str, "yaml")
 
 
   # sets up window resize events and does an initial resize of the sketch to fit the screen.

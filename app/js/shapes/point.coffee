@@ -15,7 +15,7 @@ $ -> $.shape "point",
     @_initVector(ui) # back end setup
     @_initSVG(ui) # front end setup
 
-    @sketch._points.push this
+    @sketch._points.push this # todo: move this to after create for consitency with _shapes
 
     if ui == true then @sketch.$svg.one "click", =>
       @_afterCreate()
@@ -132,15 +132,7 @@ $ -> $.shape "point",
     @$node.trigger(jQuery.Event("move", point: this))
 
 
-
-
-$ -> $.extend $.ui.sketch.prototype,
-    # An array of all the points in the sketch
-    _points: []
-    # An array of all the shapes in the sketch
-    _shapes: []
-
-
   _serialize: (obj_hash) ->
-    _.extend obj_hash, { x: @$v.elements[0], y: @$v.elements[1] }
+   {shapeType: @shapeType, type: @options.type, x: @$v.elements[0], y: @$v.elements[1] }
+
 

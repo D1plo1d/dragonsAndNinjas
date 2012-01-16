@@ -103,6 +103,7 @@ class Shape
     return unless @_created == false
     @dragging = false
     @_created = true
+    @sketch._shapes.push( this )
     @$node.trigger("aftercreate", this)
 
 
@@ -270,15 +271,16 @@ class Shape
   # (removing any x, y and points entries and replacing them with the shapes point array)
   # format: { options: {OBJECT_OPTIONS AND points: @points} }
   serialize: ->
-    obj_hash = {}
+    obj_hash = {shapeType: @shapeType}
     # excluding the intial point values (because we're going to replace these with values from @points)
     for key, value of @options
-      obj_hash[key] = value if /x[0-9]?/.matches(key) == key or key == "points"
-    # injecting the current point positions
-    obj_hash["points"] = ( {x: p.$v.elements[0], y: p.$v.elements[1]} for p in @points ) if @points?
-
-    obj_hash = options: non_point_opts
-    return _serialize(obj_hash)
+      obj_hash[key] = value unless /x[0-9]?/.exec(key) == key or key == "points"
+    # injecting the current point positions as x,y options
+    if @points? and @points.length > 0
+      for index, point of @points
+        obj_hash["#{axis}#{index}"] = point.$v.elements[axis_index] for axis_index, axis of ["x", "y"]
+    # injecting non-standard attributes into the options hash
+    return @_serialize(obj_hash)
 
 
   _serialize: (obj_hash) -> obj_hash

@@ -101,6 +101,8 @@ Missing Features
   - redo + undo
     - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
   - save as + load
+    - points in the same position should be merged when their created (or simply not created) so that
+      deserializing automatically faithfully recreates the points of the sketch
 
 - Constraint Solver
   - initial implementation of constraints ++30%
