@@ -1,34 +1,6 @@
-require 'sinatra/base'
-require 'sinatra/assetpack'
-require 'sinatra/reloader'
-require "yaml"
-require "haml"
-require 'coffee-script' #also requires therubyracer gem!
+Done
+====
 
-
-Features vs. Bugs
-========================================================
-
-Features
---------------------------------------------------------
-- Create shapes from a js console or via the gui
-  - circles (defined by a center point + radius)
-  - ovals (defined by a center point and a x and y radii)
-  - lines segments (defined by a start and end point)
-  - arc segments (defined by a center point, a start point and an end point)
-
-- Create shapes quickly with keyboard modifier shortcuts
-  - polygons via the create line segment command + the shift key (defined by a series of line segments)
-
-- click and drag paper movement (creates a google maps-like scrolling effect)
-
-- click and drag point movement (allows points to be repositioned to modify existing designs)
-  - snap to points (points snaps to nearby points when dragging and merge when dropped)
-  - coradial constraints* (*that work sometimes but are not exactly reliable)
-
-
-Bugs and Feature Improvements
---------------------------------------------------------
 
 DONE (previous major features)
 
@@ -60,6 +32,11 @@ DONE (previous major features)
   - ui created points should be created at the current mouse position regardless of zoom [DONE]
   - dimension text editing box should appear correctly positioned regardless of zoom [DONE]
 
+- SVG + HTML improvements ++1%
+  - SVG should automatically scale and resize to take up the full screen [DONE]
+  - The page should never scroll (even if a dimension's text field is way out in the middle of nowhere). [DONE]
+
+
 
 DONE (previous Top Priority ++7% items)
 
@@ -83,7 +60,14 @@ DONE (previous Top Priority ++7% items)
     - esc keyboard shortcut for cancel
 
 
+
+
+Yet to be done
+==============
+
+
 Top Priority Bugs ++7%
+--------------------------------------------------------
 
   - vertical dimensions still overlap text and lines even when in the alt-minimized state (needs more offset!)
 
@@ -107,15 +91,13 @@ Top Priority Bugs ++7%
 
   - when you click and drag an element and then move the mouse off screen and release the element continues to be dragged. In these lost focus situations it would be better to stop dragging the element and treat it as a mouse up event.
 
+  - when you make a dimension's text box further right then the edge of the screen and type in a new value it trys to scroll the screen over to that text box in the middle of nowhere and screws with the illusion that this CAD program doesn't suck.
+
 
 Missing Features
 --------------------------------------------------------
 
-- SVG + HTML improvements ++2%
-  - SVG should automatically scale and resize to take up the full screen
-  - The page should never scroll (even if a dimension's text field is way out in the middle of nowhere).
-
-- File Tab ++9%
+- File Tab ++10%
   - redo + undo
     - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
   - save as + load
@@ -128,49 +110,4 @@ Missing Features
   - choose a shape you wish to create.
   - draw you shape on the screen by clicking to place each of it's points.
   - you can now create more shapes or click on an existing shape or point to move it.
-
-To Do List
-========================================================
-
-Everything Else
-  - dimension texts disapear at a certain point because their font-size drops below 1px. How can we solve this?
-    why do we not use floating point font sizes? is that possible in svg?
-  - line thickness, text sizes and other zoom-based properties should be driven by the original stylesheet sizes
-    to maintain a clear devision of js and css.
-  - zoom in/out gui buttons
-  - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
-  - dimension tool (shape)
-  - show guides on select. hide guides on deselect (unless it's being created)
-  - file tab (save, load, undo, redo) <- (just the ui)
-  - save to svg
-  - load well-formed svg
-  - export to dxf/dwg
-  - guide points? (for ovals extra drag points?)
-    - excluded from the points and shapes arrays
-  - oval drag and drop math so that drag is on the ellipse, not rx/ry
-  - oval drag points on each axis (including rotation) (guides)
-
-Very Low (probably bs) Priority box o' shit
-  - load poorly-formed svg or fail with a message box
-  - add a list of shapes constrained to each point (merging in coincident code?)
-  - 2 point tangental arcs
-  - 3 point circles
-  - refactor shape drag and drop and sketch dragging to share code
-  - make a constraint class that extends sketch extension
-  - merging coradial constraints
-
-Done
-  - hold shift while making a line to create a polygon of lines
-  - handle point create events where the click happens off the point (don't fucking scroll!)
-  - side bar checkbox to switch major / minor curve
-  - refactor lines to use shape.coffee
-  - refactor arcs to use shape.coffee
-  - basic ovals implementation
-  - wrap all shape functions with the expected "this" context.
-  - merge coincident points.
-  - points merge properly on initial drag
-  - refactor drag and drop to share code between arc dragging, circle dragging, and point dragging
-  - delete shape
-  - make points into proper objects like shapes
-  - handle point merging for coradial constraints
 

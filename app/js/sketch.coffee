@@ -37,6 +37,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @paper = Raphael(this.element[0])
     @root = @paper.set()
     @$svg = @element.find("svg")
+    @_initFullScreen()
     @_initController()
     @_updateViewBox()
     @_rescaleElementsToZoom()
@@ -151,6 +152,23 @@ $.widget "ui.sketch", $.ui.mouse,
     return unless @hasSelection()
     s.delete() for s in @_selectedParentShapes()
     @unselect()
+
+
+  # sets up window resize events and does an initial resize of the sketch to fit the screen.
+  _initFullScreen: ->
+    $(window).resize _.debounce ( => @_resizeWindow() ), 40
+    @_resizeWindow()
+
+
+  # listener for window resize events. Resizes the svg and then updates the sketch's scaling.
+  _resizeWindow: ->
+    $window = $(window)
+    @$svg.attr
+      width: $window.width()
+      height: $window.height() - @element.offset().top
+
+    @_updateViewBox()
+
 
   # Controller
   # ==================================

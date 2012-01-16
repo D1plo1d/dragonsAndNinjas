@@ -1,0 +1,46 @@
+To Do List
+========================================================
+
+Everything Else
+  - dimension texts disapear at a certain point because their font-size drops below 1px. How can we solve this?
+    why do we not use floating point font sizes? is that possible in svg?
+  - line thickness, text sizes and other zoom-based properties should be driven by the original stylesheet sizes
+    to maintain a clear devision of js and css.
+  - zoom in/out gui buttons
+  - alt dimension ui: line has padding at either end, end caps are inside and symetrical (?)
+  - dimension tool (shape)
+  - show guides on select. hide guides on deselect (unless it's being created)
+  - file tab (save, load, undo, redo) <- (just the ui)
+  - save to svg
+  - load well-formed svg
+  - export to dxf/dwg
+  - guide points? (for ovals extra drag points?)
+    - excluded from the points and shapes arrays
+  - oval drag and drop math so that drag is on the ellipse, not rx/ry
+  - oval drag points on each axis (including rotation) (guides)
+
+Very Low (probably bs) Priority box o' shit
+  - load poorly-formed svg or fail with a message box
+  - add a list of shapes constrained to each point (merging in coincident code?)
+  - 2 point tangental arcs
+  - 3 point circles
+  - refactor shape drag and drop and sketch dragging to share code
+  - make a constraint class that extends sketch extension
+  - merging coradial constraints
+  - somewhere around 3 MegaMeters the input box's coordinates overflow and it goes to the top left. Problem? Not for now at least, but certainly amuzing.
+
+Done
+  - hold shift while making a line to create a polygon of lines
+  - handle point create events where the click happens off the point (don't fucking scroll!)
+  - side bar checkbox to switch major / minor curve
+  - refactor lines to use shape.coffee
+  - refactor arcs to use shape.coffee
+  - basic ovals implementation
+  - wrap all shape functions with the expected "this" context.
+  - merge coincident points.
+  - points merge properly on initial drag
+  - refactor drag and drop to share code between arc dragging, circle dragging, and point dragging
+  - delete shape
+  - make points into proper objects like shapes
+  - handle point merging for coradial constraints
+

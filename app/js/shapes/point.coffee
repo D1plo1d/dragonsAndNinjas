@@ -141,3 +141,6 @@ $ -> $.extend $.ui.sketch.prototype,
     _shapes: []
 
 
+  _serialize: (obj_hash) ->
+    _.extend obj_hash, { x: @$v.elements[0], y: @$v.elements[1] }
+
