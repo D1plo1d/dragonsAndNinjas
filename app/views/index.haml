@@ -14,9 +14,25 @@
       %ul
         %li.ribbon-title CAD Prototype A
         %li
+          %a{:href=> '#ribbonTabFile'}
+            %span
+              %label File
+        %li
           %a{:href=> '#ribbonTabSketch'}
             %span
               %label Sketch
+
+      #ribbonTabFile
+        %ul
+          %li.file-new
+            %div
+              %span New
+          %li.file-open
+            %div
+              %span Open
+          %li.file-save
+            %div
+              %span Save
 
       #ribbonTabSketch
         %ul

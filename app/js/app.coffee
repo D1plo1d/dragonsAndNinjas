@@ -6,6 +6,9 @@ $(document).bind "lastjs", ->
     showTabsets: false
 
   $ribbon = $('#ribbon')
+  $("a[href='#ribbonTabSketch']").click()
+
+  # Sketch Tab buttons (commands)
   $ribbon.find('.cmd').corner('round 5px').click (e) =>
     if $(e.target).hasClass('active') or $(e.target).hasClass('disabled') then return
     #$('.cmd').removeClass('active')
@@ -14,6 +17,12 @@ $(document).bind "lastjs", ->
 
   #$('.sketch').bind 'aftercreate cancel', (event) =>
   #  $ribbon.find('.active').removeClass('active')
+
+  # File Tab buttons
+  $(".file-new").click -> $('.sketch').sketch("reset")
+  $(".file-open").click -> $('.sketch').sketch("load")
+  $(".file-save").click -> $('.sketch').sketch("save")
+
 
   # Sketch
   # ===============================
@@ -25,7 +34,6 @@ $(document).bind "lastjs", ->
 
   $('.sketch').bind 'select', (e, selected) =>
     $context_menu.empty()
-    console.log selected
     return unless selected.length > 0
     for s in selected
       # load in the element's configuration html
@@ -57,34 +65,6 @@ $(document).bind "lastjs", ->
       constraints_html += "<li>#{c.type}</li>" for c in constraints
   ###
 
-
-  # Save
-  # ===============================
-
-  # todo
-  ###Downloadify.create('downloadify',{
-    filename: function(){
-      return document.getElementById('filename').value;
-    },
-    data: function(){ 
-      return document.getElementById('data').value;
-    },
-    onComplete: function(){ 
-      alert('Your File Has Been Saved!'); 
-    },
-    onCancel: function(){ 
-      alert('You have cancelled the saving of this file.');
-    },
-    onError: function(){ 
-      alert('You must put something in the File Contents or there will be nothing to save!'); 
-    },
-    swf: 'media/downloadify.swf',
-    downloadImage: 'images/download.png',
-    width: 100,
-    height: 30,
-    transparent: true,
-    append: false
-  });###
 
 
   # Demos

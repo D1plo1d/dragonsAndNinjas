@@ -1,12 +1,8 @@
-require "rubygems"
-require "bundler"
-require "yaml"
+# Load up the libraries
+require 'rubygems'
+require 'bundler'
 Bundler.require(:default, ENV['RACK_ENV'])
 
-require './lib/my_way.rb'
-require './app/app.rb'
+# Leave all the heavy lifting to My Way (sweet glorious automations!)
+MyWay.map "app", to: "/", via: self
 
-
-map "/" do
-	run App
-end

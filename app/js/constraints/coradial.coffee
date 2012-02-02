@@ -27,7 +27,7 @@ $ -> $.sketchExtension "coradial",
 
 
   _mergePoint: (e) ->
-    console.log "merging?"
+    #console.log "merging?"
     index = _.indexOf(@points, e.deadPoint)
     if index != -1
       return false if e.deadPoint == @center

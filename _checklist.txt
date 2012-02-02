@@ -86,12 +86,16 @@ Top Priority Bugs ++7%
   - artifacting of points in svg. Happens on Geordie's box as well. WTF?
 
   - Arc + clockwise + angle < 180 degrees results in the wrong arc (about a incorrect center point). Why? How do we fix this?
+  - Click arc, place a first point, move the mouse quickly and place a second point but without clicking on the point itself when you place the point. Now you can't create the 3rd point and when you click it cancels the creation and kills the arc (not killing the guides)
+  - deleting an arc durring it's creation does not delete it's guides
 
   - sometimes in arc creation you need to click twice before you place the 3rd point
 
   - when you click and drag an element and then move the mouse off screen and release the element continues to be dragged. In these lost focus situations it would be better to stop dragging the element and treat it as a mouse up event.
 
   - when you make a dimension's text box further right then the edge of the screen and type in a new value it trys to scroll the screen over to that text box in the middle of nowhere and screws with the illusion that this CAD program doesn't suck.
+    - prevent text boxes from displaying if they are further left then the document width
+    - auto zoom to fit when a dimension is larger then the screen can display.
 
 
 Missing Features
@@ -100,9 +104,11 @@ Missing Features
 - File Tab ++10%
   - redo + undo
     - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
-  - save as + load
+  - save + load
+    - sketch needs to be reset on load.
     - points in the same position should be merged when their created (or simply not created) so that
       deserializing automatically faithfully recreates the points of the sketch
+    - resaving does not include the loaded shapes
 
 - Constraint Solver
   - initial implementation of constraints ++30%

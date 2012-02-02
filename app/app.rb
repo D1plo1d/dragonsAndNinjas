@@ -1,7 +1,8 @@
 # config
 # ======================================
 
-class App < MyWay
+class App < Sinatra::Base
+  register MyWay::Base
 
 
   # model
@@ -40,6 +41,7 @@ class App < MyWay
   # asset routing
   # ======================================
 
+=begin
   assets {
     #lib assets
     serve '/lib/js',     from: 'lib/js'
@@ -55,19 +57,35 @@ class App < MyWay
       '/lib/js/jquery-1.*.js',
       '/lib/js/jquery-ui-*.js',
       '/lib/js/**.js',
+      '/js/sketch.js',
       '/js/**.js',
       '/lib/last-js/**.js']
     css :all, ['/lib/css/**.css', '/css/**.css']
   }
+=end
+
+=begin
+  assets {
+    serve '/lib/require-js', from: File.join(MyWay.root, "lib", "require-js")
+  }
+=end
+
+  get "/lib/require-js/:js" do
+    send_file(File.join(MyWay.root, "lib", "require-js", params[:js]))
+  end
 
 
   # view routing
   # ======================================
 
-  set :views, Proc.new { File.join(root, "app/views") }
   get '/' do
     puts "moo2"
     haml :index, :format => :html5
+  end
+
+
+  get '/lib/media/downloadify/:file' do
+    send_file File.join(settings.root, 'lib', 'media', 'downloadify', params[:file])
   end
 
 end

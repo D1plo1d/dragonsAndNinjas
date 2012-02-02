@@ -57,7 +57,7 @@ class Shape
     # true if the shape's parameters are not defined and thus we need to
     # build the object via the gui and user interaction
     ui = @_ui( options )
-    @_created = ui == false
+    @_created = false
 
     @sketch.$svg.trigger("beforeCreate", this)
 
@@ -82,25 +82,38 @@ class Shape
     if @numberOfPoints > 0
       loadPoint(i) for i in [0 .. @numberOfPoints-1]
 
-    # predefined shape: set up the svg element
-    @_initElement() unless ui == true
-
     # call the shape's create method with the ui flag for shape-specific intialization
     @_create(ui)
+
+    # predefined shape: set up the svg element
+    @_initElement() unless ui == true
 
     # trigger the aftercreate event if the ui flag is false (otherwise we can't gaurentee the creation is complete)
     @_afterCreate() if ui == false
 
 
+  _ui: (options) -> @_has_points(options)
+
+
   # returns true if the shape is not fully defined and requiring gui interaction to fully define it.
-  _ui: (options) ->
-    return options == false or options.points? == false or options.points.length < @numberOfPoints
+  _has_points: (options) ->
+    return true if options == false
+
+    # points can be defined with x and y options
+    return false if options["x"]? and options["y"]? and @numberOfPoints == 1
+
+    return false if options.points? and options.points.length == @numberOfPoints
+
+    # multi-point shapes need each x0, y0, x1, y1.. to be defined
+    for i in [0..@numberOfPoints - 1]
+      return true unless ( options["x#{i}"]? or options["y#{i}"]? )
+    return false
 
 
   # signals the end of the shapes creation (asynchronously triggers the "aftercreate" event for gui interaction)
   _afterCreate: ->
-    console.log "created #{@shapeType}"
-    return unless @_created == false
+    return if @_created == true
+    #console.log "created #{@shapeType}"
     @dragging = false
     @_created = true
     @sketch._shapes.push( this )
@@ -120,6 +133,7 @@ class Shape
       @$node.trigger( event = $.Event("beforedelete", targetShape: targetShape) )
       return if event.isDefaultPrevented()
 
+    #console.log "deleting #{@shapeType}"
     @_deleting = true
     # delete any points that are deletable, ignore the ones that are still in use.
     point.delete(targetShape) for point in @points
@@ -148,7 +162,7 @@ class Shape
     point = @sketch.point(point) if point.type?
 
     # pushing the point to the points array if it is not already in it
-    @points.push point unless _.include(this.points, point)    
+    @points.push point unless _.include(this.points, point)
 
     @_initPointEvents(point)
 
@@ -176,7 +190,6 @@ class Shape
   _pointBeforeDelete: (e) =>
     return true if @_deleting == true
     # if a point of this shape is the original target of a deletion delete this shape
-    console.log e.targetShape
     if _.include(@points, e.targetShape)
       @delete()
       return true
@@ -195,7 +208,7 @@ class Shape
 
 
   render: ->
-    @element.attr @_attrs()
+    @element.attr @_attrs() if @_elementInitialized == true
 
 
   # gets updated raphael attributes as a hash.
@@ -213,6 +226,8 @@ class Shape
 
   # sets this shapes element to a new element with given attributes (optional) and initializes its event listeners and properties
   _initElement: (attrs) ->
+    return if @_elementInitialized == true
+    @_elementInitialized = true
     # if no element exists, use the provide options or the _attr() method to generate attributes for a new element
     unless @element?
       attrs = @_attrs() unless attrs?

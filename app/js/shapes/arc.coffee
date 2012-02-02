@@ -8,11 +8,14 @@ $ -> $.shape "arc",
 
 
   _create: (ui) ->
-    return unless ui == true
-
-    # undefined arc: dependend on arc type
-    capitalizedType = @options.type.charAt(0).toUpperCase() + @options.type.slice(1)
-    this["_init#{capitalizedType}Arc"]()
+    if ui == false
+      @_afterPointAdded()
+      @_afterPointMove()
+      @render()
+    else
+      # undefined arc: dependend on arc type
+      capitalizedType = @options.type.charAt(0).toUpperCase() + @options.type.slice(1)
+      this["_init#{capitalizedType}Arc"]()
 
 
   _initCenterPointArc: ->
@@ -31,13 +34,13 @@ $ -> $.shape "arc",
 
 
   _afterPointAdded: (point) ->
+    console.log @points.length
     if @points.length == 2
       # circle for construction purposes, used to show the user a circle of the radius of the curve
       @circleGuide = @_addGuide @sketch.paper.circle(10,20,30)
       @radiusGuide = @_addGuide @sketch.paper.path("M0,0L10,10")
 
     if @points.length == 3
-      console.log "mooo"
       @_initElement()
       @sketch.coradial(center: @points[0], points: @points[1..2])
 
@@ -68,7 +71,7 @@ $ -> $.shape "arc",
       direction = @options.direction
       radius = p[0].distanceFrom(p[1])
 
-      if p.length > 2 and @element?
+      if @points.length > 2
         # calculating the central arc angle
         angle = []
         for i in [1..2]
@@ -91,7 +94,7 @@ $ -> $.shape "arc",
         this.attrs = path: path
 
       # updating the guides for interactive element creation
-      if @points.length >= 2
+      if @circleGuide? and @radiusGuide? and @points.length >= 2
         @circleGuide.attr(cx: @points[0].x(), cy: @points[0].y(), r: radius)
         @radiusGuide.attr "path",
           "M#{@points[0].x()},#{@points[0].y()}L#{@points[1].x()},#{@points[1].y()}"

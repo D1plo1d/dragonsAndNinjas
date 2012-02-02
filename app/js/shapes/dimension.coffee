@@ -13,26 +13,29 @@ $ -> $.shape "dimension",
 
 
   # create the first point and then display the line while positioning the second
-  _addNthPoint: (n, ui = true) -> switch n
-    when 0, 1
-      @_addPoint().$node.one "aftercreate", => @_addNthPoint(@points.length)
-      if n == 1
-        @_text = @sketch.text
-          type: "implicit"
-          text: "0"
-        @_text.$node.hide().addClass("dimension-text").bind("editstart", @_editTextStart)
-        @_text.parent = this
-        @_initElement()
-        @_text.$node.show().bind("textdrag", @_dragText)
-        @sketch.$svg.bind "zoomchange", @_zoomChange
+  _addNthPoint: (n, ui = true) ->
+    if n < 2 then @_addPoint().$node.one "aftercreate", => @_addNthPoint(@points.length)
 
-    when 2 # there is no point with index 2, finish the line creation
-      @_afterCreate() if ui == true
+    if n >= 1 and @_text? == false then @_initText()
+
+    # there is no point with index 2, finish the line creation
+    @_afterCreate() if ui == true and n == 2
 
 
   _zoomChange: (e) ->
     @render()
     return true
+
+
+  _initText: ->
+    @_text = @sketch.text
+      type: "implicit"
+      text: "0"
+    @_text.$node.hide().addClass("dimension-text").bind("editstart", @_editTextStart)
+    @_text.parent = this
+    @_initElement()
+    @_text.$node.show().bind("textdrag", @_dragText)
+    @sketch.$svg.bind "zoomchange", @_zoomChange
 
 
   _attrs: ->

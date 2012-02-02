@@ -12,9 +12,8 @@ $ -> $.shape "text",
       # TODO: ui create.. very similar to points
       @options.$v.elements = $V([@options.x, @options.y]).elements if @options.x? and @options.y?
 
-      if ui == true
-        @_initElement()
-        @_afterCreate()
+      @_initElement()
+      @_afterCreate()
 
       @$node.bind "clickshape", @_clickElement
 

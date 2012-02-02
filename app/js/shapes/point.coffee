@@ -50,6 +50,13 @@ $ -> $.shape "point",
     @element.toFront()
     @$node.addClass("#{@options.type}-point")
 
+    # If there is a point already at the same [x,y] position in the sketch merge with it if ui != true
+    unless ui == true
+      @coincidentPoint = @_snapToNearestPoint(@$v, 0)
+      @_mergeCoincidentPoint()
+      @render()
+
+
 
   _attrs: ->
     attrs = {}
@@ -72,7 +79,7 @@ $ -> $.shape "point",
 
   merge: (point) ->
     return if point.isDeleted() or this.isDeleted()
-    console.log "merge #{point}"
+    #console.log "merge #{point}"
     $nodes = $().add(point.$node).add(@$node)
     $nodes.trigger(type: "merge", deadPoint: point, mergedPoint: this)
     #TODO: proper merging of all objects that reference that point
@@ -87,33 +94,42 @@ $ -> $.shape "point",
   _dragElement: (e, mouseVector) -> @move(mouseVector)
 
 
-  _dropElement: ->
+  _dropElement: -> @_mergeCoincidentPoint()
+
+
+  _mergeCoincidentPoint: ->
     @merge(@coincidentPoint) if @coincidentPoint?
     @coincidentPoint = null
 
 
-  # move a point to a new absolute x/y position if it is not blocked by any constraints
-  move: ($v, triggerConstraints = true, snapping = true) ->
+  # Sets the vectors elements to those of the nearest point within snapping distance or leaves them unchanged
+  # if there is no point close enough to snap to.
+  #
+  # Returns the nearest snappable point or null if no point is close enough to snap to.
+  _snapToNearestPoint: ($v, snappingDistance = @snappingDistance * @sketch._zoom.positionMultiplier) ->
     nearestPoint = null
+    nearestDistance = Number.MAX_VALUE
 
-    if snapping == true
-      snappingDistance = @snappingDistance * @sketch._zoom.positionMultiplier
-      # alter the position to snap to nearby points if any exist
-      nearestDistance = Number.MAX_VALUE
+    for point in @sketch._points
+      # check that the other point is not this point
+      continue if this == point
 
-      for point in @sketch._points
-        # check that the other point is not this point
-        continue if this == point
+      # check if the other point is within snapping distance of this point and it is the nearest point
+      distance = $v.distanceFrom(point.$v)
+      continue unless distance <= snappingDistance and distance < nearestDistance
 
-        # check if the other point is within snapping distance of this point and it is the nearest point
-        distance = $v.distanceFrom(point.$v)
-        continue unless distance < snappingDistance and distance < nearestDistance
-
-        nearestDistance = distance
-        nearestPoint = point
+      nearestDistance = distance
+      nearestPoint = point
 
       # if a nearby snappable point was discovered, snap to it and record the 
-      $v = nearestPoint.$v if nearestPoint?
+      $v.elements = nearestPoint.$v.elements if nearestPoint?
+      return nearestPoint
+
+
+  # move a point to a new absolute x/y position if it is not blocked by any constraints
+  move: ($v, triggerConstraints = true, snapping = true) ->
+    # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
+    nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 
 
     # Trigger a before move event and return if preventDefault is called by any handlers

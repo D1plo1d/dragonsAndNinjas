@@ -12,8 +12,8 @@ $.widget "ui.sketch", $.ui.mouse,
   # the set containing all other sets and elements in the sketch
   root: null
 
-  # the currently selected element of the sketch (or null if none are selected)
-  selectedElement: null
+  # the currently selected element(s) of the sketch (or [] if none are selected)
+  selected: []
 
   # the position of the sketch relative to the screen
   _position: [0,0]
@@ -47,6 +47,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @_initController()
     @_updateViewBox()
     @_rescaleElementsToZoom()
+    @_initFileModule()
 
 
   # inner method for reconfiguring the zoom port when the position or zoom changes
@@ -57,7 +58,7 @@ $.widget "ui.sketch", $.ui.mouse,
     @_zoom.positionOffset = (outerDimensions[i]/2 - viewportDimensions[i]/2  for i in [0, 1])
     center = ( -1 * @_position[i] + @_zoom.positionOffset[i] for i in [0,1] )
     @paper.setViewBox(center[0], center[1], viewportDimensions[0], viewportDimensions[1], true)
-  
+
 
   # sets the sketch's x,y position relative to the screen
   set_position: (position) ->
@@ -121,6 +122,8 @@ $.widget "ui.sketch", $.ui.mouse,
   hasSelection: () -> @_selected? and @_selected.length > 0
 
   updateSelection: () ->
+    @_selected = [] unless @_selected?
+    #console.log @_selected
     @_selected = _.uniq( _.union( @_selected, @_selectedChildPoints() ) )
     for s in @_selected
       s.$node.toggleClass("selected", true) if s.$node?
@@ -134,7 +137,7 @@ $.widget "ui.sketch", $.ui.mouse,
     for s in @_selected
       s.$node.toggleClass("selected", false) if s.$node?
       s._unselect()
-    @_selected = null
+    @_selected = []
     @$svg.trigger("unselect")
 
 
@@ -147,7 +150,7 @@ $.widget "ui.sketch", $.ui.mouse,
 
 
   cancel: ->
-    console.log "cancelling #{s.shapeType}" for s in @_selectedParentShapes()
+    #console.log "cancelling #{s.shapeType}" for s in @_selectedParentShapes()
     return unless @hasSelection()
     s.cancel() for s in @_selectedParentShapes()
     @updateSelection()
@@ -162,32 +165,57 @@ $.widget "ui.sketch", $.ui.mouse,
 
   serialize: (format = "yaml") ->
     console.log format
-    console.log "mooo" if format == "yaml"
     meta = { version: "0.0.0 Mega-Beta" }
     shapes = ( shape.serialize() for shape in @_shapes )
     serialization_hash = {meta: meta, shapes: shapes}
 
     return serialization_hash if format == "hash"
-    # yamlize the results
-    console.log YAML.dump(serialization_hash)
-    return YAML.dump(serialization_hash) if format == "yaml"
+
+    serial_data = JSON.stringify(serialization_hash) if format == "json"
+    serial_data = YAML.dump(serialization_hash) if format == "yaml"
+
+    console.log serial_data
+    return serial_data
 
 
   deserialize: (obj, format = "yaml") ->
+    #hash
     hash = obj if format == "hash"
+
+    # yaml
+    # TODO: none of these fucking yaml parsers work. what the hell js?
     hash = jsyaml.load(obj) if format == "yaml"
+    #console.log(hash = YAMLParser.eval(obj)) if format == "yaml"
+    require.config
+      baseUrl: "/lib/require-js/"
+    #hash = require( ["yaml"], (yaml) -> yaml.eval(obj) ) if format == "yaml"
 
+    # json
+    hash = JSON.parse(obj) if format == "json"
+
+
+    # TODO: reset the sketch's content before loading in the new shapes
+    @reset()
+
+    console.log hash.shapes
     # TODO: load in each object and stuffs
+    for i, opts of hash.shapes
+      shapeType = opts.shapeType
+      console.log shapeType
+      this[shapeType](opts)
 
 
-  save: ->
-    # todo: write to file.
-    @serialize("yaml")
+  reset: ->
+    @resetZoom()
+    console.log "before reset"
+    console.log @_shapes.length
+    for shape in @_shapes
+      shape.delete()
+    console.log "reset"
+    console.log @_shapes.length
+    console.log @_points.length
+    console.log "reset end"
 
-
-  load: ->
-    str = "" # TODO: loading files from somewhere
-    @deserialize(str, "yaml")
 
 
   # sets up window resize events and does an initial resize of the sketch to fit the screen.
@@ -199,9 +227,10 @@ $.widget "ui.sketch", $.ui.mouse,
   # listener for window resize events. Resizes the svg and then updates the sketch's scaling.
   _resizeWindow: ->
     $window = $(window)
+    height = $window.height() - @element.offset().top
     @$svg.attr
       width: $window.width()
-      height: $window.height() - @element.offset().top
+      height: if height > 0 then height else 0
 
     @_updateViewBox()
 
@@ -228,6 +257,13 @@ $.widget "ui.sketch", $.ui.mouse,
     # Delete and Cancel
     $(document).bind "keyup", "del", => @delete()
     $(document).bind "keyup", "esc", => @cancel()
+
+    # New
+    $(document).bind "keydown", "ctrl+n", (e) =>
+      @reset()
+      e.stopPropagation( )  
+      e.preventDefault( )
+      return false
 
     # Zoom
     $(document).bind "keypress", "+", =>

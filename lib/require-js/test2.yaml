@@ -1,0 +1,21 @@
+---
+meta
+  version: "0.0.0 Mega-Beta"
+
+shapes
+- shapeType: "point"
+  type: "implicit"
+  x: "404"
+  y: "109"
+
+- shapeType: "point"
+  type: "implicit"
+  x: "812"
+  y: "62"
+
+- shapeType: "dimension"
+  offset: "30"
+  x0: "404"
+  y0: "109"
+  x1: "812"
+  y1: "62"

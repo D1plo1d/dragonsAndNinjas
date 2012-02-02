@@ -1,32 +1,9 @@
 source :rubygems
 
-
-# Sinatra
-gem "rack"
-gem "sinatra", "<1.3.0", :require => "sinatra/base"
-
-
-# Assets
-gem "sinatra-assetpack", :require => "sinatra/assetpack"
-gem "json"
-gem "haml"
-gem "therubyracer" # required for coffee-script
-gem "coffee-script"
+gem "sinatra", :require => "sinatra/base"
+gem "sinatra-assetpack", :git => "https://github.com/rstacruz/sinatra-assetpack.git", :require => "sinatra/assetpack"
+gem "my_way", :path => "../gems/my_way/"
 
 
 # Other Libraries
-
-
-# ENV-specific Libraries
-group :development do
-  gem "sinatra-reloader"
-end
-
-group :test do
-
-end
-
-group :production do
-
-end
 

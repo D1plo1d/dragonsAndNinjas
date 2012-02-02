@@ -6,6 +6,30 @@ body
   border: 0px
   min-width: 1280px
 
+// The File Tab
+#ribbonTabFile
+  .ui-ribbon-group
+    cursor: pointer
+    width: 100px
+    height: 99px
+    background-position: 50% 40%
+    background-repeat: no-repeat
+
+    &.file-new
+      background-image: url("/images/icons/page_white.png")
+    &.file-open
+      background-image: url("/images/icons/folder.png")
+    &.file-save
+      background-image: url("/images/icons/disk.png")
+
+
+    div.ui-ribbon-group-content
+      margin-top: 70px
+      width: 100px
+      text-align: center
+
+
+// Other Stuff
 .ui-tabs .ui-tabs-nav li.ribbon-title
   padding-top: 9px
   margin-right: 5px
