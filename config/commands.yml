@@ -1,9 +1,9 @@
 Sketch:
-  "Dimension":
+  "Dimensions":
     Dimension:
       #disabled: true
 
-  "Add Entities":
+  "Shapes":
     line:
     circle:
     #bezier:
