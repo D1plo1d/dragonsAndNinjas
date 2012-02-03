@@ -22,7 +22,7 @@
         %a.btn.btn-small.file-save{href: "#"}
           %i.icon-ok
           Save
-        %a.btn.btn-small.file-save{href: "#"}
+        %a.btn.btn-small.file-save-as{href: "#"}
           %i.icon-pencil
           Save As..
         %a.btn.btn-small.file-cnc{href: "#"}
@@ -38,18 +38,19 @@
           -# %a{:href => "#model-tab", :"data-toggle" => "pill"} Model
 
       %ul.tab-content
-        #sketch-tab.tab-pane.active{:"data-toggle" => "buttons-radio"}
-          - $commands.each do |cmd_set|
-            - first_section = true
-            - cmd_set[1].each do |section|
-              -#.span-4{:class=>"#{cmd_set[0].downcase}-#{css_name(section[0])}-section"}
-              - if first_section == false
-                .divider
-              - first_section = false
-              - section[1].each do |cmd|
-                - css_classes = "cmd #{cmd[1][:css_name].to_s}-button"
-                - css_classes += " disabled" if cmd[1]['disabled'] == true
-                %button.btn{:class=>css_classes, :cmd=>cmd[1][:js_name]}= cmd[0]
+        #sketch-tab.tab-pane.active
+          %span{:"data-toggle" => "buttons-radio"}
+            - $commands.each do |cmd_set|
+              - first_section = true
+              - cmd_set[1].each do |section|
+                -#.span-4{:class=>"#{cmd_set[0].downcase}-#{css_name(section[0])}-section"}
+                - if first_section == false
+                  .divider
+                - first_section = false
+                - section[1].each do |cmd|
+                  - css_classes = "cmd #{cmd[1][:css_name].to_s}-button"
+                  - css_classes += " disabled" if cmd[1]['disabled'] == true
+                  %button.btn{:class=>css_classes, :cmd=>cmd[1][:js_name]}= cmd[0]
         -# #model-tab.tab-pane
         -#  Comming Eventually!
 
