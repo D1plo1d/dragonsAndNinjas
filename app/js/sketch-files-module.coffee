@@ -106,20 +106,31 @@ $ -> _.extend $.ui.sketch.prototype,
       $('#load-modal').html( @_loadTemplate(data) ).addClass("modal").modal()
 
 
+  _findLocalFile: (name = @name(), fn) -> Lawnchair (store) => store.all (files) =>
+    fn( _.find files, (f) => (f.name == name) )
+
+
   # Saves the sketch to a browser local store. Later versions may also synchronize with remote cad repositories
-  _saveToLocalDB: ( name = @name() ) ->
+  _saveToLocalDB: ( name = @name() ) -> @_findLocalFile name, (previousFile) =>
     console.log "saving locally.."
-    @localFiles.save { name: name, data: @serialize("json") }
+    file = { name: name, data: @serialize("json") }
+    # set the key if we are overwriting an existing file of the same name
+    file.key = previousFile.key if previousFile?
+    # save the file and update the sketch's name
+    @localFiles.save file
+    @name(name)
     console.log "saved."
 
 
   # Asynchronously loads the sketch from a browser local store.
   # Later versions may also allow loading from remote cad repositories
-  _loadFromLocalDB: (name = @name()) -> Lawnchair (store) => store.all (files) =>
-    f = _.find files, (f) => (f.name == name)
+  _loadFromLocalDB: (name = @name()) -> @_findLocalFile name, (f) =>
+    throw "local file does not exist: #{name}" unless f?
+
     console.log name
     console.log f
     @deserialize(f.data, "json")
+    @name(name)
 
 
   # Maybe move this out of the scope of Sketch and into jQuery.fn?
