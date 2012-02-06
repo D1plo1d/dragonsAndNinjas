@@ -31,6 +31,7 @@ $ -> $.shape "dimension",
     @_text = @sketch.text
       type: "implicit"
       text: "0"
+      serialize: false
     @_text.$node.hide().addClass("dimension-text").bind("editstart", @_editTextStart)
     @_text.parent = this
     @_initElement()

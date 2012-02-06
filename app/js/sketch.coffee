@@ -166,7 +166,7 @@ $.widget "ui.sketch", $.ui.mouse,
   serialize: (format = "yaml") ->
     console.log format
     meta = { version: "0.0.0 Mega-Beta" }
-    shapes = ( shape.serialize() for shape in @_shapes )
+    shapes = _.compact( shape.serialize() for shape in @_shapes )
     serialization_hash = {meta: meta, shapes: shapes}
 
     return serialization_hash if format == "hash"

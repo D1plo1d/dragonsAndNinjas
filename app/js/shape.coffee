@@ -50,7 +50,7 @@ class Shape
     this[f] = $.proxy(this[f], this) for f in _.functions(this)
 
     # options-based shape config
-    @options = $.extend (points: []), @options, options
+    @options = $.extend (points: [], serialize: true), @options, options
     @points = @options.points
     @guides = @sketch.paper.set()
 
@@ -286,6 +286,7 @@ class Shape
   # (removing any x, y and points entries and replacing them with the shapes point array)
   # format: { options: {OBJECT_OPTIONS AND points: @points} }
   serialize: ->
+    return null if @options["serialize"] == false
     obj_hash = {shapeType: @shapeType}
     # excluding the intial point values (because we're going to replace these with values from @points)
     for key, value of @options
