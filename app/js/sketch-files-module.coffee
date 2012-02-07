@@ -15,12 +15,11 @@ $ -> _.extend $.ui.sketch.prototype,
     # File bar buttons
     #--------------------------------
 
-    $(".file-new").click => @reset()
-
     # File Menu Buttons
-    $(".file-open").click => @load()
-    $(".file-save-as").click => @_openLocalFileModal("save")
-    $(".file-save").click => @save()
+    $(".file-new").click => @reset(); true
+    $(".file-open").click => @load(); true
+    $(".file-save-as").click => @_openLocalFileModal("save"); true
+    $(".file-save").click => @save(); true
 
     # Delete File(s) Button
     @deleteFilesTemplate ?= Handlebars.compile $("#delete-files-warning-template").html()
@@ -39,9 +38,9 @@ $ -> _.extend $.ui.sketch.prototype,
 
   _initFileShortcutKeys: ->
     # Keyboard bindings
-    $("body").bind "keydown", "ctrl+s", => @save(); false
-    $("body").bind "keydown", "ctrl+shift+s", => @_openLocalFileModal("save"); false
-    $("body").bind "keydown", "ctrl+o", => @load(); false
+    $(document).bind "keydown", "ctrl+s", => @save(); false
+    $(document).bind "keydown", "ctrl+shift+s", => @_openLocalFileModal("save"); false
+    $(document).bind "keydown", "ctrl+o", => @load(); false
 
 
   name: (name) ->
@@ -58,13 +57,11 @@ $ -> _.extend $.ui.sketch.prototype,
   # save("my sketch") # -> saves the sketch under the file name "my sketch"
   save: (name = @_name) ->
     if name? then @_saveToLocalDB(name) else @_openLocalFileModal("save")
-    return true
 
 
   load: (name) ->
     console.log name
     if name? then @_loadFromLocalDB(name) else @_openLocalFileModal("load")
-    return true
 
 
   # opens a local file modal. Specifically this opens either a save-as modal or a load modal
