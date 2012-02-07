@@ -17,44 +17,24 @@ $ -> _.extend $.ui.sketch.prototype,
 
     $(".file-new").click => @reset()
 
-
-    # Selecting a file to load (in the load modal)
-    $(document).on "click", ".load-file-list .nav.nav-list li:not('.nav-header')", (e) ->
-      $item = $(this)
-      $list = $item.closest(".nav.nav-list")
-      $list.find("li").removeClass("active")
-      $item.addClass("active")
-
-    # Selecting a file to save over (in the save as modal)
-    $(document).on "click", ".save-as-file-list .nav.nav-list li:not('.nav-header')", (e) ->
-      $item = $(this)
-      $item.closest(".modal-body").find(".file-name-input").val $item.data("file-name")
-
-
-    # The load and save modal templates
-    @_loadTemplate = Handlebars.compile $("#load-modal-template").html()
-    @_saveAsTemplate = Handlebars.compile $("#save-as-modal-template").html()
-
-    # Finishing the open transaction or displaying an error
-    $(document).on "click", ".open-btn", (e) =>
-      $modal = $(e.target).closest(".modal")
-      filename = $modal.find("li.active").data("file-name")
-      console.log "opening '#{filename}'"
-      @load(filename)
-      $modal.modal("hide")
-
-    # Finishing the save as transaction or displaying an error
-    $(document).on "click", ".save-as-btn", (e) =>
-      $modal = $(e.target).closest(".modal")
-      filename = $modal.find(".file-name-input").val()
-      console.log "saving as '#{filename}'"
-      @save(filename)
-      $modal.modal("hide")
-
     # File Menu Buttons
     $(".file-open").click => @load()
-    $(".file-save-as").click => @openSaveAsModal()
+    $(".file-save-as").click => @_openLocalFileModal("save")
     $(".file-save").click => @save()
+
+    # Delete File(s) Button
+    @deleteFilesTemplate ?= Handlebars.compile $("#delete-files-warning-template").html()
+    $(document).on "click", ".file-modal .btn-delete", (e) =>
+      console.log "clicked!"
+      $modal = $(e.currentTarget).closest(".file-modal")
+      fileNames = $modal.fileModal("selectedFileNames")
+
+      # warn about the impending deletion
+      $warning = $( $("<div class='modal'></div>").appendTo("body") )
+      $warning.html( @deleteFilesTemplate(files: fileNames) ).modal()
+      $warning.on "click", ".btn-warning", =>
+        console.log "deleting?"
+        @_deleteLocalFiles(fileNames)
 
 
   _initFileShortcutKeys: ->
@@ -63,7 +43,7 @@ $ -> _.extend $.ui.sketch.prototype,
       @save()
       return false
     $("body").bind "keydown", "ctrl+shift+s", =>
-      @openSaveAsModal()
+      @_openLocalFileModal("save")
       return false
     $("body").bind "keydown", "ctrl+l", =>
       console.log "moocow!"
@@ -85,29 +65,33 @@ $ -> _.extend $.ui.sketch.prototype,
   # save() # -> saves the sketch to it's previous location or prompts with a save as dialog for a new file
   # save("my sketch") # -> saves the sketch under the file name "my sketch"
   save: (name = @_name) ->
-    if name?
-      @_saveToLocalDB(name)
-    else
-      @openSaveAsModal()
-
-
-  openSaveAsModal: -> @fileNames (files) =>
-    data = {files: files}
-    $('#save-as-modal').html( @_saveAsTemplate(data) ).addClass("modal").modal()
+    if name? then @_saveToLocalDB(name) else @_openLocalFileModal("save")
+    return true
 
 
   load: (name) ->
-    return @_loadFromLocalDB(name) if name?
-    # if no file name is specified open the load modal
-    @fileNames (files) =>
-      data = {files: files}
-      # data = {files: ["my cad file 1","another cad file b","a way better file c"]}
-      console.log data
-      $('#load-modal').html( @_loadTemplate(data) ).addClass("modal").modal()
+    console.log name
+    if name? then @_loadFromLocalDB(name) else @_openLocalFileModal("load")
+    return true
+
+
+  # opens a local file modal. Specifically this opens either a save-as modal or a load modal
+  _openLocalFileModal: (op) -> @fileNames (files) =>
+    t = if op == "save" then "save-as" else op # the template's css name
+    $("##{t}-modal").fileModal(template: t, files: files).on "fileselected", (e) => this[op](e.fileName)
 
 
   _findLocalFile: (name = @name(), fn) -> Lawnchair (store) => store.all (files) =>
     fn( _.find files, (f) => (f.name == name) )
+
+  _deleteLocalFiles: (fileNames) ->
+    for name in fileNames
+      console.log "deleteing #{name}"
+      @_findLocalFile name, (file) ->
+        return unless file?
+        Lawnchair (store) => store.remove file.key, =>
+          $(document).trigger $.Event("cadfilesdeleted", fileNames: [name])
+
 
 
   # Saves the sketch to a browser local store. Later versions may also synchronize with remote cad repositories
@@ -138,6 +122,7 @@ $ -> _.extend $.ui.sketch.prototype,
   fileNames: (fn) -> Lawnchair (store) => store.all (files) =>
     console.log files
     fn (_.map files, (f) -> f.name).sort (a,b) -> a.toLowerCase().compare(b.toLowerCase())
+
 
   # Exports the sketch to the given file format and prompts the user to download it.
   # This technically works for the default file format but it's very hackish.

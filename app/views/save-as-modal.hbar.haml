@@ -2,29 +2,16 @@
   %a.close{:"data-dismiss" => "modal"} ×
   %h3 Save As
 
+
 .modal-body
-  %p
-    %b Note:
-    CAD Prototype A uses local storage to keep your CAD files in your browser. If you have something important that you don't want to loose DO NOT use CAD Prototype A without backups.
-  %p
-    CAD Prototype A contains no magic and will not back up your files for you.
 
-  .well.save-as-file-list
-    %ul.nav.nav-list
-      %li.nav-header Existing files
-      = "{{#each files }}"
-      %li{:"data-file-name" => "{{this}}"}
-        %a{:href => "#"}
-          %i
-          = "{{this}}"
-      = "{{/each}}"
-
-  %form.form-inline
-    %label Select a File Name
-    %input.file-name-input.span3{:type => "text", :placeholder => "Choose a new file name"}
+  != haml :"_partials/file-modal.hbar", locals: { placeholder_text: "Choose a new file name" }
 
 
 .modal-footer
-  %button.btn.btn-primary.save-as-btn Save As
+  %button.btn.btn-primary{:"data-dismiss" => "modal"} Save As
   %button.btn{:"data-dismiss" => "modal"} Cancel
+  %button.btn.btn-danger.btn-delete
+    %i.icon-trash
+    Delete
 

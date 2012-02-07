@@ -197,11 +197,11 @@ $.widget "ui.sketch", $.ui.mouse,
     # TODO: reset the sketch's content before loading in the new shapes
     @reset()
 
-    console.log hash.shapes
+    #console.log hash.shapes
     # TODO: load in each object and stuffs
     for i, opts of hash.shapes
       shapeType = opts.shapeType
-      console.log shapeType
+      #console.log shapeType
       this[shapeType](opts)
 
 

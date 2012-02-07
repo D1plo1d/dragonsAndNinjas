@@ -105,10 +105,15 @@ Missing Features
   - redo + undo
     - point.split(options, lines, constraints) -> splits the given lines (and eventually constraints) off into a new point which by default is is in ui create (dragged by the user). Required for undoing point merges.
   - save + load
-    - sketch needs to be reset on load.
+    - sketch needs to be reset on load. [DONE]
     - points in the same position should be merged when their created (or simply not created) so that
-      deserializing automatically faithfully recreates the points of the sketch
-    - resaving does not include the loaded shapes
+      deserializing automatically faithfully recreates the points of the sketch [DONE]
+    - resaving does not include the loaded shapes [DONE]
+    - File list functionality should be shared between Open and Save modals. A jQuery UI plugin can be used here.
+    - File lists should be able to select multiple files via shift and ctrl.
+    - The delete key should be able to delete them.
+    - A delete button should be at the bottom left of each file modal to delete selected files.
+    - Deleting a file should launch a small modal confirmation dialog
 
 - Constraint Solver
   - initial implementation of constraints ++30%

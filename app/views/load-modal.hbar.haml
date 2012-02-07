@@ -4,24 +4,14 @@
 
 
 .modal-body
-  %p
-    %b Note:
-    CAD Prototype A uses local storage to keep your CAD files in your browser. If you have something important that you don't want to loose DO NOT use CAD Prototype A without backups.
-  %p
-    CAD Prototype A contains no magic and will not back up your files for you.
 
-  .well.load-file-list
-    %ul.nav.nav-list
-      %li.nav-header Select a File
-      = "{{#each files }}"
-      %li{:"data-file-name" => "{{this}}"}
-        %a{:href => "#"}
-          %i
-          = "{{this}}"
-      = "{{/each}}"
+  != haml :"_partials/file-modal.hbar", locals: { placeholder_text: "Select a file to load" }
 
 
 .modal-footer
-  %button.btn.btn-primary.open-btn Open
+  %button.btn.btn-primary{:"data-dismiss" => "modal"} Open
   %button.btn{:"data-dismiss" => "modal"} Cancel
+  %button.btn.btn-danger.btn-delete
+    %i.icon-trash
+    Delete
 
