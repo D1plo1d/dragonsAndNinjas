@@ -2,22 +2,26 @@ $(document).bind "lastjs", ->
   # Main Menu
   # ===============================
   $cmdBar = $('.cmd-bar')
-  $("a[href='#ribbonTabSketch']").click()
+  cmdShape = null
 
   # Sketch Tab buttons (commands)
-  $cmdBar.find('.cmd').click (e) =>
-    if $(e.target).hasClass('active') or $(e.target).hasClass('disabled') then return
-    $('.sketch').sketch($(e.target).attr('cmd'))
+  $cmdBar.on 'click', '.cmd:not(.active, .disabled)', (e) =>
+    $cmd = $(e.currentTarget)
+    cmdShape = $('.sketch').sketch($cmd.attr('cmd'))
 
   # Click a button a second time to cancel the current action
   $cmdBar.on 'click', '.cmd.active', (e) =>
-    $(e.target).removeClass("active")
+    $cmd = $(e.currentTarget)
+    $cmd.removeClass("active")
     $('.sketch').sketch("cancel")
     return false
 
   # TODO: Unselect the command once it's action is finished or cancelled
-  #$('.sketch').bind 'aftercreate cancel', (event) =>
-  #  $cmdBar.find('.active').removeClass('active')
+  $('.sketch').on 'aftercreate beforedelete', (event) =>
+    return true unless event.shape == cmdShape
+    cmdShape = null
+    $cmdBar.find('.cmd.active').removeClass('active')
+    return true
 
 
   # Sketch

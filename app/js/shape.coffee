@@ -117,7 +117,7 @@ class Shape
     @dragging = false
     @_created = true
     @sketch._shapes.push( this )
-    @$node.trigger("aftercreate", this)
+    @_event("aftercreate")
 
 
   # cancels the current operation on this shape (if any)
@@ -129,9 +129,8 @@ class Shape
   delete: (targetShape = this) ->
     return if @_deleting == true
     # notifying listeners of this shapes untimely demise if the node is created
-    if @$node?
-      @$node.trigger( event = $.Event("beforedelete", targetShape: targetShape) )
-      return if event.isDefaultPrevented()
+    event = @_event("beforedelete", targetShape: targetShape)
+    return if event.isDefaultPrevented()
 
     #console.log "deleting #{@shapeType}"
     @_deleting = true
@@ -205,6 +204,15 @@ class Shape
       if @points.length == @numberOfPoints and @element?
         @render()
       return true
+
+
+  # fires a event for this shape with the given event name and event object properties
+  _event: (name, properties = {}) ->
+    # Generating the event
+    event = $.Event name, Object.merge({shape: this}, properties)
+    # Triggering the event on this shape's node if it exists or the svg element if it doesn't
+    (if @$node? then @$node else @sketch.$svg).trigger event
+    return event
 
 
   render: ->

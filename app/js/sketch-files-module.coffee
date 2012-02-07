@@ -137,7 +137,7 @@ $ -> _.extend $.ui.sketch.prototype,
   # List all the CAD files in the browser's local store
   fileNames: (fn) -> Lawnchair (store) => store.all (files) =>
     console.log files
-    fn _.map files, (f) -> f.name
+    fn (_.map files, (f) -> f.name).sort (a,b) -> a.toLowerCase().compare(b.toLowerCase())
 
   # Exports the sketch to the given file format and prompts the user to download it.
   # This technically works for the default file format but it's very hackish.
