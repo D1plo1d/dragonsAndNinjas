@@ -20,7 +20,10 @@ $.widget "ui.fileModal", $.ui.mouse,
     @$list.on "click", "li:not(.nav-header)", (e) => @_clickListItem(e)
 
     # Finishing the transaction or displaying an error
-    @$modal.on "click", ".modal-footer .btn-primary", (e) => @_clickPrimaryBtn(e)
+    @_clickPrimaryBtn = $.proxy(@_clickPrimaryBtn, this)
+    @$modal.on "click", ".modal-footer .btn-primary", @_clickPrimaryBtn
+    $(document).on "keyup", null, "return", @_clickPrimaryBtn
+
     $(document).on "cadfilesdeleted", (e) =>
       for name in e.fileNames
         @_$items().filter( "[data-file-name='#{name}']" ).remove()
@@ -66,7 +69,7 @@ $.widget "ui.fileModal", $.ui.mouse,
     filename = @$modal.find(".file-name-input").val()
     return false unless filename?
     # hide the modal and trigger the modal's post-file-selection functionality
-    @$modal.trigger $.Event("fileselected", fileName: filename)
+    @$modal.modal("hide").trigger $.Event("fileselected", fileName: filename)
     return true
 
 
@@ -76,5 +79,6 @@ $.widget "ui.fileModal", $.ui.mouse,
   # destroy the file modal after it is hidden
   _hidden: ->
     console.log "hidden"
+    $(document).off "keyup", null, "return", @_clickPrimaryBtn
     $.Widget.prototype.destroy.call(this)
 

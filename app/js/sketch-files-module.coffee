@@ -8,6 +8,7 @@ $ -> _.extend $.ui.sketch.prototype,
     @localFiles = Lawnchair {}, (store) ->
       console.log "local storage initialized"
     @_initFileMenu()
+    @_initDeleteButtons()
     @_initFileShortcutKeys()
 
 
@@ -21,26 +22,20 @@ $ -> _.extend $.ui.sketch.prototype,
     $(".file-save-as").click => @_openLocalFileModal("save"); true
     $(".file-save").click => @save(); true
 
-    # Delete File(s) Button
-    @deleteFilesTemplate ?= Handlebars.compile $("#delete-files-warning-template").html()
-    $(document).on "click", ".file-modal .btn-delete", (e) =>
-      console.log "clicked!"
-      $modal = $(e.currentTarget).closest(".file-modal")
-      fileNames = $modal.fileModal("selectedFileNames")
 
-      # warn about the impending deletion
-      $warning = $( $("<div class='modal'></div>").appendTo("body") )
-      $warning.html( @deleteFilesTemplate(files: fileNames) ).modal()
-      $warning.on "click", ".btn-warning", =>
-        console.log "deleting?"
-        @_deleteLocalFiles(fileNames)
+  _initDeleteButtons: ->
+    # Delete File(s) Button
+    $(document).on "click", ".file-modal .btn-delete", (e) => @_openDeleteFilesModal(); true
+    $(document).on "keyup", null, "del", (e) =>
+      @_openDeleteFilesModal() if $(".file-modal:visible").length > 0
+      return true
 
 
   _initFileShortcutKeys: ->
     # Keyboard bindings
-    $(document).bind "keydown", "ctrl+s", => @save(); false
-    $(document).bind "keydown", "ctrl+shift+s", => @_openLocalFileModal("save"); false
-    $(document).bind "keydown", "ctrl+o", => @load(); false
+    $(document).on "keydown", null, "ctrl+s", => @save(); false
+    $(document).on "keydown", null, "ctrl+shift+s", => @_openLocalFileModal("save"); false
+    $(document).on "keydown", null, "ctrl+o", => @load(); false
 
 
   name: (name) ->
@@ -62,6 +57,18 @@ $ -> _.extend $.ui.sketch.prototype,
   load: (name) ->
     console.log name
     if name? then @_loadFromLocalDB(name) else @_openLocalFileModal("load")
+
+
+  _openDeleteFilesModal: ->
+    @deleteFilesTemplate ?= Handlebars.compile $("#delete-files-warning-template").html()
+
+    $modal = $(".file-modal:visible")
+    fileNames = $modal.fileModal("selectedFileNames")
+    # warn about the impending deletion
+    $warning = $( $("<div class='modal'></div>").appendTo("body") )
+    $warning.html( @deleteFilesTemplate(files: fileNames) ).modal()
+    # delete the files once they confirm they want them dead
+    $warning.on "click", ".btn-warning", => @_deleteLocalFiles(fileNames)
 
 
   # opens a local file modal. Specifically this opens either a save-as modal or a load modal
