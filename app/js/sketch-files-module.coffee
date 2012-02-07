@@ -39,26 +39,18 @@ $ -> _.extend $.ui.sketch.prototype,
 
   _initFileShortcutKeys: ->
     # Keyboard bindings
-    $("body").bind "keydown", "ctrl+s", =>
-      @save()
-      return false
-    $("body").bind "keydown", "ctrl+shift+s", =>
-      @_openLocalFileModal("save")
-      return false
-    $("body").bind "keydown", "ctrl+l", =>
-      console.log "moocow!"
-      @load()
-      return false
+    $("body").bind "keydown", "ctrl+s", => @save(); false
+    $("body").bind "keydown", "ctrl+shift+s", => @_openLocalFileModal("save"); false
+    $("body").bind "keydown", "ctrl+o", => @load(); false
 
 
   name: (name) ->
-    if name?
-      @_name = name
-      return null
-    if @_name?
-      return @_name
-    else
-      throw "no sketch name"
+    # Getting the name
+    return @_name if name? == false and @_name?
+    # Setting the name
+    throw "no sketch name" unless name?
+    @_name = name
+    return null
 
 
   # Saves the sketch to either a new file or it's existing file depending on the argument
