@@ -291,9 +291,9 @@ $.widget "ui.sketch", $.ui.mouse,
     $(document).bind "keydown", "shift", => @shift = true
     $(document).bind "keyup", "shift", => @shift = false
 
-    $(@$svg).bind "aftercreate", (e, shape) =>
-      if @shift and shape.shapeType == "line"
-        @line(points: [ shape.points[1] ])
+    $(@$svg).bind "aftercreate", (e) =>
+      if @shift and e.shape.shapeType == "line"
+        @line(points: [ e.shape.points[1] ])
 
   # Mouse interactions
   # -------------------------------
