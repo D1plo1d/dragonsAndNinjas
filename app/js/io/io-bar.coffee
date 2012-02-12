@@ -1,11 +1,16 @@
 # This deals with the task of importing files, exporting files, saving and loading
 # It is not included in sketch because it's not really core to sketching.
-$ -> _.extend $.ui.sketch.prototype,
+$.widget "ui.ioBar",
+  options:
+    serialize: -> alert("serialize option required!")
+    deserialize:  -> alert("deserialize option required!")
+    reset:  -> alert("reset option required!")
+    
 
-  _initFileModule: ->
-
+  _create: ->
     # Store for locally saved native cad files.
-    @localFiles = Lawnchair {}, (store) ->
+    @$ioBar = $(@element)
+    @localFiles = Lawnchair (store) ->
       console.log "local storage initialized"
     @_initFileMenu()
     @_initDeleteButtons()
@@ -17,10 +22,10 @@ $ -> _.extend $.ui.sketch.prototype,
     #--------------------------------
 
     # File Menu Buttons
-    $(".file-new").click => @reset(); true
-    $(".file-open").click => @load(); true
-    $(".file-save-as").click => @_openLocalFileModal("save"); true
-    $(".file-save").click => @save(); true
+    @$ioBar.find(".file-new").click => @reset(); true
+    @$ioBar.find(".file-open").click => @load(); true
+    @$ioBar.find(".file-save-as").click => @_openLocalFileModal("save"); true
+    @$ioBar.find(".file-save").click => @save(); true
 
 
   _initDeleteButtons: ->
@@ -42,7 +47,7 @@ $ -> _.extend $.ui.sketch.prototype,
     # Getting the name
     return @_name if name? == false and @_name?
     # Setting the name
-    throw "no sketch name" unless name?
+    throw "no file name" unless name?
     @_name = name
     return null
 
@@ -59,6 +64,8 @@ $ -> _.extend $.ui.sketch.prototype,
     if name? then @_loadFromLocalDB(name) else @_openLocalFileModal("load")
 
 
+  reset: ->  @options.reset()
+
   _openDeleteFilesModal: ->
     @deleteFilesTemplate ?= Handlebars.compile $("#delete-files-warning-template").html()
 
@@ -74,26 +81,25 @@ $ -> _.extend $.ui.sketch.prototype,
   # opens a local file modal. Specifically this opens either a save-as modal or a load modal
   _openLocalFileModal: (op) -> @fileNames (files) =>
     t = if op == "save" then "save-as" else op # the template's css name
-    $("##{t}-modal").fileModal(template: t, files: files).on "fileselected", (e) => this[op](e.fileName)
+    $("##{t}-modal").fileModal(template: t, files: files).on "fileselected", (e) =>
+      console.log "moooo!!! w00t #{op} #{e.fileName}"
+      this[op](e.fileName)
 
 
-  _findLocalFile: (name = @name(), fn) -> Lawnchair (store) => store.all (files) =>
-    fn( _.find files, (f) => (f.name == name) )
+  _findLocalFile: (name = @name(), fn) -> @localFiles.where "record.name == '#{name}'", (file) => ( fn(file[0] || null) )
 
   _deleteLocalFiles: (fileNames) ->
     for name in fileNames
       console.log "deleteing #{name}"
-      @_findLocalFile name, (file) ->
-        return unless file?
-        Lawnchair (store) => store.remove file.key, =>
-          $(document).trigger $.Event("cadfilesdeleted", fileNames: [name])
+      @_findLocalFile name, (file) => @localFiles.remove file.key, =>
+        $(document).trigger $.Event("cadfilesdeleted", fileNames: [name])
 
 
 
   # Saves the sketch to a browser local store. Later versions may also synchronize with remote cad repositories
   _saveToLocalDB: ( name = @name() ) -> @_findLocalFile name, (previousFile) =>
     console.log "saving locally.."
-    file = { name: name, data: @serialize("json") }
+    file = { name: name, data: @options.serialize() }
     # set the key if we are overwriting an existing file of the same name
     file.key = previousFile.key if previousFile?
     # save the file and update the sketch's name
@@ -109,13 +115,13 @@ $ -> _.extend $.ui.sketch.prototype,
 
     console.log name
     console.log f
-    @deserialize(f.data, "json")
     @name(name)
+    @options.deserialize(f.data)
 
 
   # Maybe move this out of the scope of Sketch and into jQuery.fn?
   # List all the CAD files in the browser's local store
-  fileNames: (fn) -> Lawnchair (store) => store.all (files) =>
+  fileNames: (fn) -> @localFiles.all (files) =>
     console.log files
     fn (_.map files, (f) -> f.name).sort (a,b) -> a.toLowerCase().compare(b.toLowerCase())
 

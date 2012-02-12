@@ -47,7 +47,18 @@ $.widget "ui.sketch", $.ui.mouse,
     @_initController()
     @_updateViewBox()
     @_rescaleElementsToZoom()
-    @_initFileModule()
+    @_initIoBar()
+
+
+  _initIoBar: ->
+    @$ioBar = $(".title-bar").ioBar
+      serialize: => @serialize("json")
+      deserialize: (data) => @deserialize(data, "json")
+      reset: => @reset()
+
+
+  save: (fileName) -> @$ioBar.ioBar("save", fileName)
+  load: (fileName) -> @$ioBar.ioBar("load", fileName)
 
 
   # inner method for reconfiguring the zoom port when the position or zoom changes
