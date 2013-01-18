@@ -42,7 +42,7 @@ $ -> $.shape "arc",
 
     if @points.length == 3
       @_initElement()
-      @sketch.coradial(center: @points[0], points: @points[1..2])
+      @constraint = @sketch.coradial(center: @points[0], points: @points[1..2])
 
 
   direction: (direction) ->
@@ -54,6 +54,11 @@ $ -> $.shape "arc",
   attrs: { path: "M0,0L0,0" }
   _attrs: -> @attrs
 
+  _afterDelete: -> 
+    @guides.remove() if @guides?
+    console.log @constraint
+    @constraint.delete() if @constraint?
+
   _afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
     # center point arc
 
@@ -63,7 +68,6 @@ $ -> $.shape "arc",
     p = []
     for i in [0..@points.length-1]
       p[i] = @points[i].$v
-
 
     # updating the on-screen arc segment
     if @options.type == "centerPoint"

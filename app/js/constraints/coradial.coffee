@@ -25,6 +25,11 @@ $ -> $.sketchExtension "coradial",
   merge: (constraint) ->
     return false
 
+  delete: -> for point in @points
+    point.$node.unbind "beforemove", @_beforePointMove
+    point.$node.unbind "merge", @_mergePoint
+
+
 
   _mergePoint: (e) ->
     #console.log "merging?"
