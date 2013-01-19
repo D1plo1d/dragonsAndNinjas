@@ -127,16 +127,21 @@ $ -> $.shape "point",
 
 
   # move a point to a new absolute x/y position if it is not blocked by any constraints
-  move: ($v, triggerConstraints = true, snapping = true) ->
+  move: ($v, causedByConstraint = false, snapping = true) ->
+    console.log "moo: move!"
     # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
     nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 
+    if !causedByConstraint
+      point.freedom = true for point in @sketch._points
+      constraint.alreadyApplied = false for constraint in @sketch.constraints
+    @freedom = false
 
     # Trigger a before move event and return if preventDefault is called by any handlers
     # This can be used by things like constraints to effect the positioning of points
     beforeMoveEvent = jQuery.Event "beforemove", 
       point: this
-      triggerConstraints: triggerConstraints
+      causedByConstraint: causedByConstraint
       position: $v
     @$node.trigger(beforeMoveEvent)
     return if beforeMoveEvent.isDefaultPrevented()

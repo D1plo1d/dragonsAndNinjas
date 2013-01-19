@@ -14,6 +14,7 @@ $ -> $.sketchExtension "coradial",
     @center = @options.center
     @_initPointEvents(@center)
     @_initPointEvents(point) for point in @points
+    @sketch.constraints.push @
 
 
   _initPointEvents: (point) ->
@@ -28,8 +29,8 @@ $ -> $.sketchExtension "coradial",
   delete: -> for point in @points
     point.$node.unbind "beforemove", @_beforePointMove
     point.$node.unbind "merge", @_mergePoint
-
-
+    n = @sketch.constraints.indexOf(@)
+    @sketch.constraints.splice(n,n)
 
   _mergePoint: (e) ->
     #console.log "merging?"
@@ -47,15 +48,26 @@ $ -> $.sketchExtension "coradial",
 
 
   _beforePointMove: (e) ->
-    return true unless e.triggerConstraints == true
+    console.log "coradial called"
+    return true if @alreadyApplied
+    @alreadyApplied = true
+    console.log "coradial not applied: proceeding"
 
     # calculating the new radius for both scenarios:
     # either we are moving the center point or a point along the circle
     anotherPoint = if e.point == @center then @points[0] else @center
     radius = e.position.distanceFrom(anotherPoint.$v)
 
+    for point in @points isnt e.point
+      insufficientlyFree = true if !point.freedom
+    return false if insufficientlyFree?
+    console.log "coradial points not bound: proceeding!"
+
+    console.log "coradial points", @points, @points[0] == e.point, @points[1] == e.point
+    all_moves_succeed = true
     # repositioning each point in the constraint to maintain the constraint's assertions
     for point in @points
+      console.log "coradial point", point
       continue if point == e.point
 
       unit_vector = point.$v.subtract(@center.$v).toUnitVector()
@@ -64,7 +76,9 @@ $ -> $.sketchExtension "coradial",
       point_vector = unit_vector.multiply(radius).add(@center.$v)
 
       # update the point's position
-      point.move(point_vector, false)
+      move_success = point.move(point_vector, true)
 
-    return true
+      all_moves_succeed = all_moves_succeed and move_success
+
+    return all_moves_succeed
 
