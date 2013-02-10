@@ -12,6 +12,8 @@ $ -> $.shape "point",
 
 
   _create: (ui) ->
+    @$v_consider = $V([0, 0])
+
     @_initVector(ui) # back end setup
     @_initSVG(ui) # front end setup
 
@@ -125,32 +127,43 @@ $ -> $.shape "point",
       $v.elements = nearestPoint.$v.elements if nearestPoint?
       return nearestPoint
 
+  move_consider: ($v) ->
+    @$v_consider.elements[i] = $v.elements[i] for i in [0,1]
+    @freedom = false
+    beforeMoveEvent = jQuery.Event "beforemove", 
+      point: this
+      causedByConstraint: true
+      position: $v
+    @$node.trigger(beforeMoveEvent)
+    return !( beforeMoveEvent.isDefaultPrevented() )
+
 
   # move a point to a new absolute x/y position if it is not blocked by any constraints
   move: ($v, causedByConstraint = false, snapping = true) ->
-    console.log "moo: move!"
+    #console.log "moo: move!"
     # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
     nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 
     if !causedByConstraint
-      point.freedom = true for point in @sketch._points
+      for point in @sketch._points
+        point.freedom = true
+        point.$v_consider.elements[i] = point.$v.elements[i] for i in [0,1]
+        point.consider_stack = []
       constraint.alreadyApplied = false for constraint in @sketch.constraints
-    @freedom = false
 
     # Trigger a before move event and return if preventDefault is called by any handlers
     # This can be used by things like constraints to effect the positioning of points
-    beforeMoveEvent = jQuery.Event "beforemove", 
-      point: this
-      causedByConstraint: causedByConstraint
-      position: $v
-    @$node.trigger(beforeMoveEvent)
-    return if beforeMoveEvent.isDefaultPrevented()
+    return false unless @move_consider($v) == true
 
     # move the element and trigger a move event
-    @$v.elements[i] = $v.elements[i] for i in [0,1]
     @coincidentPoint = nearestPoint
+    for p in @sketch._points
+      p._move p.$v_consider
+
+  _move: ($v) -> if $v.elements[0] != @$v.elements[0] and $v.elements[1] != @$v.elements[1]
+    @$v.elements[i] = $v.elements[i] for i in [0,1]
     @element.attr @_attrs()
-    @$node.trigger(jQuery.Event("move", point: this))
+    @$node.trigger(jQuery.Event("move", point: @))
 
 
   _serialize: (obj_hash) ->

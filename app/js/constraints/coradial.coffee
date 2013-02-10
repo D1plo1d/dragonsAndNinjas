@@ -48,37 +48,37 @@ $ -> $.sketchExtension "coradial",
 
 
   _beforePointMove: (e) ->
-    console.log "coradial called"
     return true if @alreadyApplied
     @alreadyApplied = true
-    console.log "coradial not applied: proceeding"
+    #@sketch.push_consider_state()
 
     # calculating the new radius for both scenarios:
     # either we are moving the center point or a point along the circle
     anotherPoint = if e.point == @center then @points[0] else @center
-    radius = e.position.distanceFrom(anotherPoint.$v)
+    radius = e.position.distanceFrom(anotherPoint.$v_consider)
 
     for point in @points isnt e.point
       insufficientlyFree = true if !point.freedom
     return false if insufficientlyFree?
-    console.log "coradial points not bound: proceeding!"
+    #console.log "coradial points not bound: proceeding!"
 
-    console.log "coradial points", @points, @points[0] == e.point, @points[1] == e.point
+    #console.log "coradial points", @points, @points[0] == e.point, @points[1] == e.point
     all_moves_succeed = true
     # repositioning each point in the constraint to maintain the constraint's assertions
     for point in @points
-      console.log "coradial point", point
+      #console.log "coradial point", point
       continue if point == e.point
 
-      unit_vector = point.$v.subtract(@center.$v).toUnitVector()
+      unit_vector = point.$v_consider.subtract(@center.$v_consider).toUnitVector()
 
       # calculate a new point at the same angle but with the updated radius of the dragged point
-      point_vector = unit_vector.multiply(radius).add(@center.$v)
+      point_vector = unit_vector.multiply(radius).add(@center.$v_consider)
 
       # update the point's position
-      move_success = point.move(point_vector, true)
+      move_success = point.move_consider(point_vector)
 
       all_moves_succeed = all_moves_succeed and move_success
-
+    #console.log "all moves succeed", all_moves_succeed
+    #@sketch.pop_consider_state(reset = !all_moves_succeed)
     return all_moves_succeed
 

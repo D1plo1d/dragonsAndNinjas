@@ -327,3 +327,15 @@ $.widget "ui.sketch", $.ui.mouse,
     p = @_$vMouse(e).subtract(@_$vSketchClick).add($V @_position)
     @set_position p.elements
 
+
+   # Other
+
+  push_consider_state: () ->
+    for p in @_points
+      p.consider_stack.push(p.$v_consider)
+
+  pop_consider_state: (reset = false) ->
+    for p in @_points
+      $v = p.consider_stack.pop()
+      p.$v = $v if reset
+
