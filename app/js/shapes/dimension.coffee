@@ -63,11 +63,13 @@ $ -> $.shape "dimension",
 
     # position the dimension's text at the line's midpoint
     @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
-    length = tangent.distanceFrom(Vector.Zero(2))
+    lengthMM = tangent.distanceFrom(Vector.Zero(2))
+    dimLength = $u("#{lengthMM}mm").as(@unit)
     # TODO: proper precision
-    length = Math.round(length*100)/100
-    # TODO: proper units
-    dimLength = $u("#{length}mm").as(@unit)
+    length = Math.round(dimLength.val()*100)/100
+    dimLength.value = length
+    dimLength.currentUnit = @unit
+    console.log dimLength
     @_text.options.text = dimLength.toString()
     @_text.updateText()
     @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
