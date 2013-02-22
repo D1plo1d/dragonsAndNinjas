@@ -9,6 +9,7 @@ $ -> $.shape "dimension",
 
 
   _create: (ui) ->
+    @unit="mm"
     @_addNthPoint(@points.length, ui)
 
 
@@ -66,7 +67,8 @@ $ -> $.shape "dimension",
     # TODO: proper precision
     length = Math.round(length*100)/100
     # TODO: proper units
-    @_text.options.text = "#{length}mm"
+    dimLength = $u("#{length}mm").as(@unit)
+    @_text.options.text = dimLength.toString()
     @_text.updateText()
     @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
 
@@ -140,7 +142,10 @@ $ -> $.shape "dimension",
 
   _textChange: ($field) ->
     @_updateVariables()
-    length = $u($field.val()).as("mm").val()
+    dimLength = $u($field.val())
+    length = dimLength.as("mm").val()
+    @unit = dimLength.currentUnit
+    console.log $u($field.val())
     @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
