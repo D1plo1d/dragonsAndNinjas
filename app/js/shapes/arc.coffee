@@ -8,6 +8,7 @@ $ -> $.shape "arc",
 
 
   _create: (ui) ->
+    @presentAngle = 0
     if ui == false
       @_afterPointAdded()
       @_afterPointMove()
@@ -61,6 +62,7 @@ $ -> $.shape "arc",
 
   _afterPointMove: (point) -> # called after _create whenever a point in options['points'] is moved
     # center point arc
+    T = 2*Math.PI # Tau = 2*pi
 
     return if @points.length < 2
 
@@ -71,8 +73,6 @@ $ -> $.shape "arc",
 
     # updating the on-screen arc segment
     if @options.type == "centerPoint"
-      #TODO: placeholder for a proper direction property
-      direction = @options.direction
       radius = p[0].distanceFrom(p[1])
 
       if @points.length > 2
@@ -83,14 +83,26 @@ $ -> $.shape "arc",
           angle[i] = Math.atan2(p_relative.elements[1], p_relative.elements[0])
         # the minor angle is the smaller of the two possible arc lengths from p[1] to p[2]
         minorAngle = angle[2] - angle[1]
-        minorAngle -= Math.PI*2 if minorAngle > Math.PI
-        minorAngle += Math.PI*2 if minorAngle < -Math.PI
-        #console.log minorAngle * 180 / Math.PI
+        minorAngle -= T if minorAngle > Math.PI
+        minorAngle += T if minorAngle < -Math.PI
 
+        if minorAngle > 0
+          angleA = minorAngle
+          angleB = minorAngle - T
+        else
+          angleA = T + minorAngle
+          angleB = minorAngle
+
+        clockwise = Math.abs (angleA - @presentAngle) < Math.abs (angleB - @presentAngle)
+        if clockwise
+          direction = 1
+          @presentAngle = angleA
+        else
+          direction = -1
+          @presentAngle = angleB
         # caculating the svg A path's flags
         sweepFlag = if direction == 1 then 1 else 0
         largeArcFlag = if minorAngle * direction > 0 then 0 else 1
-
         # Creating the path string
         path = "M#{@points[1].x()}, #{@points[1].y()} "
         path +="A#{radius},#{radius}, 0, #{largeArcFlag}, #{sweepFlag}, #{@points[2].x()}, #{@points[2].y()}"
