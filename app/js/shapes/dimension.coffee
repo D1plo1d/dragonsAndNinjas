@@ -50,12 +50,15 @@ $ -> $.shape "dimension",
     direction = if @options.offset > 0 then 1 else -1
     endcapLength = 10 * @sketch._zoom.positionMultiplier
 
+    #endcapDistances[0] is the total outward distance, [1] is the inner one (relative position).
     endcapDistances = []
     endcapDistances[0] = @options.offset + endcapLength*direction
     endcapDistances[1] = -endcapLength*direction
-
+    
     endcapPoints = ( normal.x(distance) for distance in endcapDistances )
 
+    # endcap dir is because we will draw everything with one path
+    # so we will do one side backwards
     endcap = (dir) =>
       coord = (index, d = dir) => "#{endcapPoints[index].x(d).toPath()}"
       return "m#{coord(1)} l#{coord(0)}" if dir == -1
@@ -90,7 +93,7 @@ $ -> $.shape "dimension",
     if $vHalfLine.isAntiparallelTo(tangent)
       # offsetting the text
       textOffset = endcapLength + @_text.$node.height()/2 + @textPadding["y"]
-      @_text_position = @_text_position.add( normal.x(textOffset) )
+      @_text_position = @_text_position.add( normal.x(textOffset*direction) )
 
       path = "M#{@points[0].$v.toPath()} #{endcap(1)} m#{tangent.toPath()} #{endcap(-1)}"
 
