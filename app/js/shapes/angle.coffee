@@ -91,10 +91,10 @@ $ -> $.shape "angle",
       #textBox = textBox.add(textPadding.x(zoom))
       #textThickness = Math.abs textBox.dot(midAngleV)
 
-      @_text_position = base.add(midAngleV.x(r + 16*zoom))
+      @_text_position = base.add(midAngleV.x(r + 19*zoom))
 
       @_text.move(@_text_position)
-      @_text.options.text = Math.abs(Math.round(@presentAngle*360/2/Math.PI))
+      @_text.options.text = "#{Math.abs(Math.round(@presentAngle*360/2/Math.PI))}°"
       @_text.updateText()
       @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
 
