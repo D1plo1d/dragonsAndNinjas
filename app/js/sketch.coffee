@@ -95,7 +95,7 @@ $.widget "ui.sketch", $.ui.mouse,
   _rescaleElementsToZoom: () ->
     m = @_zoom.positionMultiplier
     # rescale all the lines to the new zoom
-    $2pxElements = $("svg .line, .arc, .circle, .ellipse, .dimension")
+    $2pxElements = $("svg .line, .arc, .circle, .ellipse, .dimension .angle")
     $2pxElements.globalcss "stroke-width", 2 * m
 
     $guides = $("svg .creation-guide")
