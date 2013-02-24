@@ -53,7 +53,7 @@ $ -> $.shape "angle",
       r /= 2.3
       r = Math.min r, 30*@sketch._zoom.positionMultiplier
 
-      angles = (Math.atan2 p.elements[1], p.elements[0] for p in tangents)  
+      angles = (Math.atan2 p.elements[1], p.elements[0] for p in tangents) 
       a = angles[1] - angles[0]
       a -= T if a > Math.PI
       a += T if a < -Math.PI
@@ -72,6 +72,7 @@ $ -> $.shape "angle",
         direction = -1
         @presentAngle = angleB
 
+      # Path calculations.
       sweepFlag = if direction == 1 then 1 else 0
       largeArcFlag = if a * direction > 0 then 0 else 1
 
@@ -79,6 +80,24 @@ $ -> $.shape "angle",
 
       path = "M#{arcPoints[0].toPath()} "
       path +="A#{r},#{r}, 0, #{largeArcFlag}, #{sweepFlag}, #{arcPoints[1].toPath()}"
+
+      # Text position calculuations
+      midAngle = angles[0] + @presentAngle/2 
+      midAngleV = $V([Math.cos(midAngle), Math.sin(midAngle) ])
+
+      #textBox = $V([@_text.$node.width(), @_text.$node.height()])
+      #textPadding = $V([@textPadding["x"], @textPadding["y"]])
+      zoom = @sketch._zoom.positionMultiplier
+      #textBox = textBox.add(textPadding.x(zoom))
+      #textThickness = Math.abs textBox.dot(midAngleV)
+
+      @_text_position = base.add(midAngleV.x(r + 16*zoom))
+
+      @_text.move(@_text_position)
+      @_text.options.text = Math.abs(Math.round(@presentAngle*360/2/Math.PI))
+      @_text.updateText()
+      @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
+
       return path: path
 
     
@@ -117,21 +136,21 @@ $ -> $.shape "angle",
 
 
   _editTextStart: (e, field) ->
-    $(field).requiredfield
-      dataType: "distance"
-      liveCheck: true
-      functionValidate: (val) -> val != 0
+    #$(field).requiredfield
+    #  dataType: "distance"
+    #  liveCheck: true
+    #  functionValidate: (val) -> val != 0
 
-    $(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
+    #$(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
 
 
   _textChange: ($field) ->
-    @_updateVariables()
-    dimLength = $u($field.val())
-    length = dimLength.as("mm").val()
-    @unit = dimLength.currentUnit
-    console.log $u($field.val())
-    @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
+    #@_updateVariables()
+    #dimLength = $u($field.val())
+    #length = dimLength.as("mm").val()
+    #@unit = dimLength.currentUnit
+    #console.log $u($field.val())
+    #@points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
 
