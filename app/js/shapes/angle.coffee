@@ -11,6 +11,7 @@ $ -> $.shape "angle",
   _create: (ui) ->
     @unit="mm"
     @_addNthPoint(@points.length, ui)
+    @presentAngle = 0
 
 
   # create the first point and then display the line while positioning the second
@@ -41,17 +42,44 @@ $ -> $.shape "angle",
 
 
   _attrs: ->
-    base = @points[0].$v
-    tangents = [@points[1].$v.subtract(base), @points[2].$v.subtract(base)]
-    r = Math.min tangents[0].modulus(), tangents[1].modulus()
-    console.log r
-    r /= 2.3
-    r = Math.min r, 30*@sketch._zoom.positionMultiplier
-    arcPoints = (base.add(tg.toUnitVector().x(r)) for tg in tangents)
-    console.log tangents, arcPoints
-    path = "M#{arcPoints[0].toPath()} "
-    path +="A#{r},#{r}, 0, 0, 0, #{arcPoints[1].toPath()}"
-    return path: path
+    T = 2*Math.PI # Tau = 2*pi
+
+    if @points.length > 2
+      base = @points[0].$v
+      tangents = [@points[1].$v.subtract(base), @points[2].$v.subtract(base)]
+      
+
+      r = Math.min tangents[0].modulus(), tangents[1].modulus()
+      r /= 2.3
+      r = Math.min r, 30*@sketch._zoom.positionMultiplier
+
+      angles = (Math.atan2 p.elements[1], p.elements[0] for p in tangents)  
+      a = angles[1] - angles[0]
+      a -= T if a > Math.PI
+      a += T if a < -Math.PI
+      if a > 0
+          angleA = a
+          angleB = a - T
+        else
+          angleA = T + a
+          angleB = a
+
+      clockwise = Math.abs (angleA - @presentAngle) < Math.abs (angleB - @presentAngle)
+      if clockwise
+        direction = 1
+        @presentAngle = angleA
+      else
+        direction = -1
+        @presentAngle = angleB
+
+      sweepFlag = if direction == 1 then 1 else 0
+      largeArcFlag = if a * direction > 0 then 0 else 1
+
+      arcPoints = (base.add(tg.toUnitVector().x(r)) for tg in tangents)
+
+      path = "M#{arcPoints[0].toPath()} "
+      path +="A#{r},#{r}, 0, #{largeArcFlag}, #{sweepFlag}, #{arcPoints[1].toPath()}"
+      return path: path
 
     
 
