@@ -2,6 +2,7 @@ Sketch:
   "Dimensions":
     Dimension:
       #disabled: true
+    angle:
 
   "Shapes":
     line:
@@ -17,5 +18,6 @@ Sketch:
     #bevel:
     #  disabled: true
     point:
+
 
 
