@@ -46,16 +46,16 @@ $ -> $.shape "angle",
     T = 2*Math.PI # Tau = 2*pi
 
     if @points.length > 2
-      base = @points[0].$v
-      tangents = [@points[1].$v.subtract(base), @points[2].$v.subtract(base)]
+      @base = @points[0].$v
+      @tangents = [@points[1].$v.subtract(@base), @points[2].$v.subtract(@base)]
       
 
-      r = Math.min tangents[0].modulus(), tangents[1].modulus()
+      r = Math.min @tangents[0].modulus(), @tangents[1].modulus()
       r /= 2.3
       r = Math.min r, 30*@sketch._zoom.positionMultiplier
 
-      angles = (Math.atan2 p.elements[1], p.elements[0] for p in tangents) 
-      a = angles[1] - angles[0]
+      @angles = (Math.atan2 p.elements[1], p.elements[0] for p in @tangents) 
+      a = @angles[1] - @angles[0]
       a -= T if a > Math.PI
       a += T if a < -Math.PI
       if a > 0
@@ -78,14 +78,14 @@ $ -> $.shape "angle",
       sweepFlag = if direction == 1 then 1 else 0
       largeArcFlag = if a * direction > 0 then 0 else 1
 
-      arcPoints = (base.add(tg.toUnitVector().x(r)) for tg in tangents)
+      arcPoints = (@base.add(tg.toUnitVector().x(r)) for tg in @tangents)
 
       path = "M#{arcPoints[0].toPath()} "
       path +="A#{r},#{r}, 0, #{largeArcFlag}, #{sweepFlag}, #{arcPoints[1].toPath()}"
 
       # Text position calculuations
-      midAngle = angles[0] + @presentAngle/2 
-      midAngleV = $V([Math.cos(midAngle), Math.sin(midAngle) ])
+      midAngle = @angles[0] + @presentAngle/2 
+      @midAngleV = $V([Math.cos(midAngle), Math.sin(midAngle) ])
 
       #textBox = $V([@_text.$node.width(), @_text.$node.height()])
       #textPadding = $V([@textPadding["x"], @textPadding["y"]])
@@ -93,7 +93,7 @@ $ -> $.shape "angle",
       #textBox = textBox.add(textPadding.x(zoom))
       #textThickness = Math.abs textBox.dot(midAngleV)
 
-      @_text_position = base.add(midAngleV.x(r + 19*zoom))
+      @_text_position = @base.add(@midAngleV.x(r + 19*zoom))
 
       @_text.move(@_text_position)
       @_text.options.text = "#{Math.abs(Math.round(@presentAngle*360/2/Math.PI))}°"
@@ -110,14 +110,7 @@ $ -> $.shape "angle",
 
 
   _updateVariables: ->
-    # TODO: share this code with the attrs method better
-    @_$vTangent = @points[1].$v.subtract(@points[0].$v)
-    @_$vUnitTangent = @_$vTangent.toUnitVector()
-    #hack to prevent even odder behaviour when we have zero length dimensions
-    @_$vUnitTangent.elements[0] = 1 if @_$vUnitTangent.distanceFrom(Vector.Zero(2)) == 0
-    @_$vNormal = $V [ -@_$vUnitTangent.elements[1], @_$vUnitTangent.elements[0] ]
-
-    @_$l = $L(@points[0].$v, @points[1].$v.subtract(@points[0].$v))
+    return
 
 
   # Update the dimension's measurement graphic offset to the distance from the line
@@ -127,12 +120,8 @@ $ -> $.shape "angle",
 
     # calculating the offset as the distance from the mouse to the point of intersetion of a ray normal to the 
     # line containing the mouse vector.
-    $vOffset = $vMouse.to3D().subtract( @_$l.intersectionWith( $L($vMouse, @_$vNormal) ) )
-    # offset distance
-    @options.offset = $vOffset.distanceFrom(Vector.Zero(3))
-    # offset direction
-    @options.offset *= -1 if $vOffset.dot(@_$vNormal.to3D()) < 0
-    #@options.offset -= @offsetShift
+    if $vMouse.subtract(@base).dot(@midAngleV) < 0
+      @presentAngle = 2*Math.PI - @presentAngle
     # updating the gui
     @element.attr @_attrs()
 
@@ -151,7 +140,10 @@ $ -> $.shape "angle",
     dimLength = $u($field.val())
     angle = dimLength.as("rad").val()
     @unit = dimLength.currentUnit
-    console.log $u($field.val())
+    r = @tangents[1].modulus()
+    direction = if @presentAngle > 0 then 1 else -1
+    a = @angles[0] + direction*angle
+    @points[2].move(@base.add($V([Math.cos(a), Math.sin(a)]).x(r)))
     #@points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
