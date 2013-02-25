@@ -5,13 +5,13 @@ $ -> $.shape "angle",
     x: 10
     y: 5
   options:
-    offset: 30
+    presentAngle: 0
 
 
   _create: (ui) ->
     @unit="°"
     @_addNthPoint(@points.length, ui)
-    @presentAngle = 0
+    @options.presentAngle = 0
 
 
   # create the first point and then display the line while positioning the second
@@ -42,6 +42,7 @@ $ -> $.shape "angle",
 
 
   _attrs: ->
+    @presentAngle = @options.presentAngle
     T = 2*Math.PI # Tau = 2*pi
 
     if @points.length > 2
@@ -71,6 +72,7 @@ $ -> $.shape "angle",
       else
         direction = -1
         @presentAngle = angleB
+      @options.presentAngle = @presentAngle
 
       # Path calculations.
       sweepFlag = if direction == 1 then 1 else 0
