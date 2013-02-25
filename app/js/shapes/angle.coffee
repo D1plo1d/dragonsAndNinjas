@@ -9,7 +9,7 @@ $ -> $.shape "angle",
 
 
   _create: (ui) ->
-    @unit="mm"
+    @unit="°"
     @_addNthPoint(@points.length, ui)
     @presentAngle = 0
 
@@ -136,20 +136,20 @@ $ -> $.shape "angle",
 
 
   _editTextStart: (e, field) ->
-    #$(field).requiredfield
-    #  dataType: "distance"
-    #  liveCheck: true
-    #  functionValidate: (val) -> val != 0
+    $(field).requiredfield
+      dataType: "angle"
+      liveCheck: true
+      functionValidate: (val) -> val != 0
 
-    #$(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
+    $(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
 
 
   _textChange: ($field) ->
     #@_updateVariables()
-    #dimLength = $u($field.val())
-    #length = dimLength.as("mm").val()
-    #@unit = dimLength.currentUnit
-    #console.log $u($field.val())
+    dimLength = $u($field.val())
+    angle = dimLength.as("rad").val()
+    @unit = dimLength.currentUnit
+    console.log $u($field.val())
     #@points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 

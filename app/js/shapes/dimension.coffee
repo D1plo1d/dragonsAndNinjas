@@ -41,6 +41,7 @@ $ -> $.shape "dimension",
 
 
   _attrs: ->
+    return if @points.length < 2
     tangent = @points[1].$v.subtract(@points[0].$v)
     normal = tangent.toUnitVector()
     normal.elements = [ -normal.elements[1], normal.elements[0] ]
@@ -66,13 +67,12 @@ $ -> $.shape "dimension",
 
     # position the dimension's text at the line's midpoint
     @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
-    lengthMM = tangent.distanceFrom(Vector.Zero(2))
-    dimLength = $u("#{lengthMM}mm").as(@unit)
+    lengthMM = tangent.modulus()
+    dimLength = $u("#{lengthMM || 0}mm").as(@unit)
     # TODO: proper precision
     length = Math.round(dimLength.val()*100)/100
     dimLength.value = length
     dimLength.currentUnit = @unit
-    console.log dimLength
     @_text.options.text = dimLength.toString()
     @_text.updateText()
     @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
