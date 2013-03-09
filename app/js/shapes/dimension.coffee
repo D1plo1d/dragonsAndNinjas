@@ -19,7 +19,11 @@ $ -> $.shape "dimension",
     if n >= 1 and @_text? == false then @_initText()
 
     # there is no point with index 2, finish the line creation
-    @_afterCreate() if ui == true and n == 2
+    if ui == true and n == 2
+      console.log("done creating dimension")
+      @_afterCreate()
+      dist = @points[0].$v.distanceFrom(@points[1].$v)
+      @constraint = @sketch.distance(points: @points, dist: dist)
 
 
   _zoomChange: (e) ->
