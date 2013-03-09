@@ -9,6 +9,7 @@ $ -> $.shape "dimension",
 
 
   _create: (ui) ->
+    @unit="mm"
     @_addNthPoint(@points.length, ui)
 
 
@@ -44,6 +45,7 @@ $ -> $.shape "dimension",
 
 
   _attrs: ->
+    return if @points.length < 2
     tangent = @points[1].$v.subtract(@points[0].$v)
     normal = tangent.toUnitVector()
     normal.elements = [ -normal.elements[1], normal.elements[0] ]
@@ -53,12 +55,15 @@ $ -> $.shape "dimension",
     direction = if @options.offset > 0 then 1 else -1
     endcapLength = 10 * @sketch._zoom.positionMultiplier
 
+    #endcapDistances[0] is the total outward distance, [1] is the inner one (relative position).
     endcapDistances = []
     endcapDistances[0] = @options.offset + endcapLength*direction
     endcapDistances[1] = -endcapLength*direction
-
+    
     endcapPoints = ( normal.x(distance) for distance in endcapDistances )
 
+    # endcap dir is because we will draw everything with one path
+    # so we will do one side backwards
     endcap = (dir) =>
       coord = (index, d = dir) => "#{endcapPoints[index].x(d).toPath()}"
       return "m#{coord(1)} l#{coord(0)}" if dir == -1
@@ -66,11 +71,13 @@ $ -> $.shape "dimension",
 
     # position the dimension's text at the line's midpoint
     @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
-    length = tangent.distanceFrom(Vector.Zero(2))
+    lengthMM = tangent.modulus()
+    dimLength = $u("#{lengthMM || 0}mm").as(@unit)
     # TODO: proper precision
-    length = Math.round(length*100)/100
-    # TODO: proper units
-    @_text.options.text = "#{length}mm"
+    length = Math.round(dimLength.val()*100)/100
+    dimLength.value = length
+    dimLength.currentUnit = @unit
+    @_text.options.text = dimLength.toString()
     @_text.updateText()
     @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
 
@@ -90,7 +97,7 @@ $ -> $.shape "dimension",
     if $vHalfLine.isAntiparallelTo(tangent)
       # offsetting the text
       textOffset = endcapLength + @_text.$node.height()/2 + @textPadding["y"]
-      @_text_position = @_text_position.add( normal.x(textOffset) )
+      @_text_position = @_text_position.add( normal.x(textOffset*direction) )
 
       path = "M#{@points[0].$v.toPath()} #{endcap(1)} m#{tangent.toPath()} #{endcap(-1)}"
 
@@ -144,7 +151,10 @@ $ -> $.shape "dimension",
 
   _textChange: ($field) ->
     @_updateVariables()
-    length = $u($field.val()).as("mm").val()
+    dimLength = $u($field.val())
+    length = dimLength.as("mm").val()
+    @unit = dimLength.currentUnit
+    console.log $u($field.val())
     @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
