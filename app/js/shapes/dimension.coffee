@@ -71,7 +71,7 @@ $ -> $.shape "dimension",
 
     # position the dimension's text at the line's midpoint
     @_text_position = @points[0].$v.add( tangent.x(0.5) ).add( endcapPoints[0] ).add(endcapPoints[1] )
-    lengthMM = tangent.modulus()
+    lengthMM = if @constraint then @constraint.options.dist else tangent.modulus()
     dimLength = $u("#{lengthMM || 0}mm").as(@unit)
     # TODO: proper precision
     length = Math.round(dimLength.val()*100)/100
@@ -155,6 +155,7 @@ $ -> $.shape "dimension",
     length = dimLength.as("mm").val()
     @unit = dimLength.currentUnit
     console.log $u($field.val())
+    @constraint.options.dist = length
     @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
