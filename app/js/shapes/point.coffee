@@ -78,6 +78,9 @@ $ -> $.shape "point",
 
 
   merge: (point) ->
+    if @coincidentPoint?
+      console.log "merging point!!"
+      console.log "-------------------" for i in [0,1,2]
     return if point.isDeleted() or this.isDeleted()
     #console.log "merge #{point}"
     $nodes = $().add(point.$node).add(@$node)
@@ -98,6 +101,9 @@ $ -> $.shape "point",
 
 
   _mergeCoincidentPoint: ->
+    if @coincidentPoint?
+      console.log "merging coincident!!"
+      console.log "-------------------" for i in [0,1,2]
     @merge(@coincidentPoint) if @coincidentPoint?
     @coincidentPoint = null
 
@@ -128,7 +134,7 @@ $ -> $.shape "point",
 
   # move a point to a new absolute x/y position if it is not blocked by any constraints
   move: ($v, causedByConstraint = false, snapping = true) ->
-    console.log "moo: move!"
+    #console.log "moo: move!"
     # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
     nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 

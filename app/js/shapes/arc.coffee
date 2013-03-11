@@ -20,7 +20,7 @@ $ -> $.shape "arc",
 
 
   _initCenterPointArc: ->
-    console.log "making a fucking arc"
+    #console.log "making a fucking arc"
     @_populatePoints()
 
 

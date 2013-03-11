@@ -16,25 +16,27 @@ $ -> $.sketchExtension "distance",
 
 
   _initPointEvents: (point) ->
+    console.log @points.indexOf point
     point.$node.bind "beforemove", @_beforePointMove
     point.$node.bind "merge", @_mergePoint
+
+  _unbindPointEvents: (point) ->
+    point.$node.unbind "beforemove", @_beforePointMove
+    point.$node.unbind "merge", @_mergePoint
 
   # todo: constraint merging and tracking
   merge: (constraint) ->
     return false
 
   delete: -> for point in @points
-    point.$node.unbind "beforemove", @_beforePointMove
-    point.$node.unbind "merge", @_mergePoint
+    @_unbindPointEvents point
     n = @sketch.constraints.indexOf(@)
     @sketch.constraints.splice(n,n)
 
   _mergePoint: (e) ->
-    console.log "merging?"
-    index = _.indexOf(@points, e.deadPoint)
-    if index != -1
-      @points[index] = e.mergedPoint
-      @_initPointEvents( e.mergedPoint )
+    @_unbindPointEvents e.mergedPoint
+    @_initPointEvents( e.mergedPoint )
+
     return true
 
 
