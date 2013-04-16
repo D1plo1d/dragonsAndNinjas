@@ -163,4 +163,5 @@ $ -> $.shape "dimension",
 
   _afterDelete: () ->
     @_text.delete() if @_text?
+    @constraint.delete() if @constraint?
 
