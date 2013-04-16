@@ -21,7 +21,9 @@ $ -> $.shape "angle",
     if n >= 2 and @_text? == false then @_initText()
 
     # there is no point with index 2, finish the line creation
-    @_afterCreate() if ui == true and n == 3
+    if ui == true and n == 3
+      @_afterCreate() 
+      @constraint = @sketch.angleC(center: @points[0], points: @points[1..2], angle: @presentAngle)
 
 
   _zoomChange: (e) ->
@@ -160,4 +162,5 @@ $ -> $.shape "angle",
 
   _afterDelete: () ->
     @_text.delete() if @_text?
+    @constraint.delete() if @constraint?
 

@@ -141,13 +141,13 @@ $ -> $.shape "point",
     
     polys = []
     polys.push(c.poly()) for c in @sketch._constraints
-    #console.log "polys", @sketch._constraints
+    #console.log "polys", polys
     varmap[@n1] = $v.elements[0]
     varmap[@n2] = $v.elements[1]
     #console.log "init", varmap
     initial = varmap.slice(0)
     k=0.01
-    for _ in [0...40]
+    for _ in [0...50]
       varmapMod = varmap.slice(0)
       for v in [0.. n-1]
         continue if v == @n1 or v == @n2
