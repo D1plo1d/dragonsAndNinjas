@@ -14,6 +14,20 @@ $ -> $.sketchExtension "coradial",
     @center = @options.center
     @_initPointEvents(@center)
     @_initPointEvents(point) for point in @points
+    @sketch._constraints.push this 
+
+  poly: () ->
+    [a,b] = @points
+    [an1, an2] = [a.n1, a.n2]
+    [bn1, bn2] = [b.n1, b.n2]
+    [cn1, cn2] = [@center.n1, @center.n2]
+    return (vals) ->
+      c1 = vals[cn1]
+      c2 = vals[cn2]
+      da = Math.sqrt(Math.pow(vals[an1]-c1,2) + Math.pow(vals[an2]-c2,2))
+      db = Math.sqrt(Math.pow(vals[bn1]-c1,2) + Math.pow(vals[bn2]-c2,2))
+      return 10*Math.abs(da-db)/(da+db)
+
 
 
   _initPointEvents: (point) ->
@@ -28,6 +42,7 @@ $ -> $.sketchExtension "coradial",
   delete: -> for point in @points
     point.$node.unbind "beforemove", @_beforePointMove
     point.$node.unbind "merge", @_mergePoint
+    @sketch._constraints = _.without(@sketch._constraints, this)
 
 
 
@@ -47,24 +62,5 @@ $ -> $.sketchExtension "coradial",
 
 
   _beforePointMove: (e) ->
-    return true unless e.triggerConstraints == true
-
-    # calculating the new radius for both scenarios:
-    # either we are moving the center point or a point along the circle
-    anotherPoint = if e.point == @center then @points[0] else @center
-    radius = e.position.distanceFrom(anotherPoint.$v)
-
-    # repositioning each point in the constraint to maintain the constraint's assertions
-    for point in @points
-      continue if point == e.point
-
-      unit_vector = point.$v.subtract(@center.$v).toUnitVector()
-
-      # calculate a new point at the same angle but with the updated radius of the dragged point
-      point_vector = unit_vector.multiply(radius).add(@center.$v)
-
-      # update the point's position
-      point.move(point_vector, false)
-
-    return true
+    return true 
 

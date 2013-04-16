@@ -42,6 +42,7 @@ $ -> $.shape "arc",
       @radiusGuide = @_addGuide @sketch.paper.path("M0,0L10,10")
 
     if @points.length == 3
+      console.log "making constraint!!!"
       @_initElement()
       @constraint = @sketch.coradial(center: @points[0], points: @points[1..2])
 

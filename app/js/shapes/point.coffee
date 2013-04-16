@@ -14,6 +14,7 @@ $ -> $.shape "point",
   _create: (ui) ->
     @_initVector(ui) # back end setup
     @_initSVG(ui) # front end setup
+    @n = 0
 
     @sketch._points.push this # todo: move this to after create for consitency with _shapes
 
@@ -131,18 +132,41 @@ $ -> $.shape "point",
     # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
     nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 
+    n=0
+    varmap = []
+    for p in @sketch._points
+      p.n1 = n++ 
+      p.n2 = n++ 
+      varmap.push p.$v.elements[i] for i in [0,1]
+    
+    polys = []
+    polys.push(c.poly()) for c in @sketch._constraints
+    console.log "polys", @sketch._constraints
+    varmap[@n1] = $v.elements[0]
+    varmap[@n2] = $v.elements[1]
+    console.log "init", varmap
+    k=0.01
+    for _ in [0...100]
+      varmapMod = varmap.slice(0)
+      for v in [0.. n-1]
+        continue if v == @n1 or v == @n2
+        for f in polys
+          val1 = f varmap
+          varmap[v] -= 1
+          val2 = f varmap
+          varmap[v] += 1
+          varmapMod[v] -= 0.5*val1*(val1-val2)/1
+      varmap=varmapMod
+    console.log "end", varmap
 
-    # Trigger a before move event and return if preventDefault is called by any handlers
-    # This can be used by things like constraints to effect the positioning of points
-    beforeMoveEvent = jQuery.Event "beforemove", 
-      point: this
-      triggerConstraints: triggerConstraints
-      position: $v
-    @$node.trigger(beforeMoveEvent)
-    return if beforeMoveEvent.isDefaultPrevented()
+    for p in @sketch._points
+      p.$v.elements[0] = varmap[p.n1] 
+      p.$v.elements[1] = varmap[p.n2]
+      p.element.attr p._attrs()
+      p.$node.trigger(jQuery.Event("move", point: p))
 
     # move the element and trigger a move event
-    @$v.elements[i] = $v.elements[i] for i in [0,1]
+    #@$v.elements[i] = $v.elements[i] for i in [0,1]
     @coincidentPoint = nearestPoint
     @element.attr @_attrs()
     @$node.trigger(jQuery.Event("move", point: this))

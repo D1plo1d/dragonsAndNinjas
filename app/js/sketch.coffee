@@ -33,6 +33,7 @@ $.widget "ui.sketch", $.ui.mouse,
   _points: []
   # An array of all the shapes in the sketch
   _shapes: []
+  _constraints: []
 
 
   # Model

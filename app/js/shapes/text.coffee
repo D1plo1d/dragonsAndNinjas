@@ -7,7 +7,7 @@ $ -> $.shape "text",
     type: "explicit" # implicit = no drag + drop, externally controlled. explicit = drag + drop.
     $v: $V([0,0])
 
-
+    
   _create: (ui) ->
       # TODO: ui create.. very similar to points
       @options.$v.elements = $V([@options.x, @options.y]).elements if @options.x? and @options.y?
