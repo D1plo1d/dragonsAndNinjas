@@ -141,35 +141,36 @@ $ -> $.shape "point",
     
     polys = []
     polys.push(c.poly()) for c in @sketch._constraints
-    console.log "polys", @sketch._constraints
+    #console.log "polys", @sketch._constraints
     varmap[@n1] = $v.elements[0]
     varmap[@n2] = $v.elements[1]
-    console.log "init", varmap
+    #console.log "init", varmap
+    initial = varmap.slice(0)
     k=0.01
-    for _ in [0...100]
+    for _ in [0...40]
       varmapMod = varmap.slice(0)
       for v in [0.. n-1]
         continue if v == @n1 or v == @n2
+        satisfied=true
         for f in polys
           val1 = f varmap
-          varmap[v] -= 1
+          varmap[v] -= 0.01
           val2 = f varmap
-          varmap[v] += 1
-          varmapMod[v] -= 0.5*val1*(val1-val2)/1
+          varmap[v] += 0.01
+          if val2 < 0.05
+            continue
+          varmapMod[v] -= 0.04*val1*(val1-val2)/0.01
+          #console.log val1, val2, 0.13*val1*(val1-val2)/0.1
+        varmap[v] -= 0.01*(varmap[v]-initial[v])
       varmap=varmapMod
-    console.log "end", varmap
+    #console.log "end", varmap
 
+    @coincidentPoint = nearestPoint
     for p in @sketch._points
       p.$v.elements[0] = varmap[p.n1] 
       p.$v.elements[1] = varmap[p.n2]
       p.element.attr p._attrs()
       p.$node.trigger(jQuery.Event("move", point: p))
-
-    # move the element and trigger a move event
-    #@$v.elements[i] = $v.elements[i] for i in [0,1]
-    @coincidentPoint = nearestPoint
-    @element.attr @_attrs()
-    @$node.trigger(jQuery.Event("move", point: this))
 
 
   _serialize: (obj_hash) ->

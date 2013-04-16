@@ -20,7 +20,9 @@ $ -> $.shape "dimension",
     if n >= 1 and @_text? == false then @_initText()
 
     # there is no point with index 2, finish the line creation
-    @_afterCreate() if ui == true and n == 2
+    if ui == true and n == 2
+      @constraint = @sketch.distance(points: @points, dist: @points[0].$v.distanceFrom(@points[1].$v))
+      @_afterCreate()
 
 
   _zoomChange: (e) ->
@@ -150,7 +152,7 @@ $ -> $.shape "dimension",
     dimLength = $u($field.val())
     length = dimLength.as("mm").val()
     @unit = dimLength.currentUnit
-    console.log $u($field.val())
+    @constraint.dist=length
     @points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
