@@ -27,7 +27,7 @@ $ -> $.sketchExtension "angleC",
       [c1,c2] = [vals[cn1],vals[cn2]]
       [p1,p2] = [a1 - c1, a2 - c2]
       [q1,q2] = [b1 - c1, b2 - c2]
-      angleProd  = sin*p1*q1 + cos*p1*q2 - cos*p2*q1 + sin*p2*q2
+      angleProd  = sin*p1*q1 - cos*p1*q2 + cos*p2*q1 + sin*p2*q2
       #angleProd2 = sin*p1*q1 - cos*p1*q2 + cos*p2*q1 + sin*p2*q2
       #angleProd = Math.min(angleProd1, angleProd2)
       return 180*Math.sqrt(angleProd*angleProd/ (q1*q1+q2*q2) / (p1*p1+p2*p2))
