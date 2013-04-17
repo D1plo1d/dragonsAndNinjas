@@ -21,6 +21,7 @@ $ -> $.shape "dimension",
 
     # there is no point with index 2, finish the line creation
     if ui == true and n == 2
+      @lockText = true
       @constraint = @sketch.distance(points: @points, dist: @points[0].$v.distanceFrom(@points[1].$v))
       @_afterCreate()
 
@@ -74,8 +75,7 @@ $ -> $.shape "dimension",
     length = Math.round(dimLength.val()*100)/100
     dimLength.value = length
     dimLength.currentUnit = @unit
-    console.log dimLength
-    @_text.options.text = dimLength.toString()
+    @_text.options.text = dimLength.toString() if not @lockText
     @_text.updateText()
     @_text.element.attr "font-size", 18 * @sketch._zoom.positionMultiplier
 
@@ -148,6 +148,7 @@ $ -> $.shape "dimension",
 
 
   _textChange: ($field) ->
+    @lockText = true
     @_updateVariables()
     dimLength = $u($field.val())
     length = dimLength.as("mm").val()
