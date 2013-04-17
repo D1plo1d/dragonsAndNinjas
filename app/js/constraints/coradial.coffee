@@ -26,7 +26,7 @@ $ -> $.sketchExtension "coradial",
       c2 = vals[cn2]
       da = Math.sqrt(Math.pow(vals[an1]-c1,2) + Math.pow(vals[an2]-c2,2))
       db = Math.sqrt(Math.pow(vals[bn1]-c1,2) + Math.pow(vals[bn2]-c2,2))
-      return 10*Math.abs(da-db)/(da+db)
+      return 150*Math.abs(da-db)/(da+db)
 
 
 

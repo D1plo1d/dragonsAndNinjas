@@ -147,21 +147,24 @@ $ -> $.shape "point",
     #console.log "init", varmap
     initial = varmap.slice(0)
     k=0.01
-    for _ in [0...50]
+    for _ in [0...200]
       varmapMod = varmap.slice(0)
       for v in [0.. n-1]
         continue if v == @n1 or v == @n2
         satisfied=true
         for f in polys
           val1 = f varmap
-          varmap[v] -= 0.01
-          val2 = f varmap
-          varmap[v] += 0.01
-          if val2 < 0.05
+          if val1 < 0.005
             continue
-          varmapMod[v] -= 0.04*val1*(val1-val2)/0.01
+          else
+            satisfied = false
+          varmap[v] -= 0.005
+          val2 = f varmap
+          varmap[v] += 0.005
+          varmapMod[v] -= 0.08*val1*(val1-val2)/0.01
           #console.log val1, val2, 0.13*val1*(val1-val2)/0.1
-        varmap[v] -= 0.01*(varmap[v]-initial[v])
+        break if satisfied
+        varmap[v] -= 0.002*(varmap[v]-initial[v])
       varmap=varmapMod
     #console.log "end", varmap
 
