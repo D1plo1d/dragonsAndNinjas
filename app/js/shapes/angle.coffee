@@ -21,7 +21,9 @@ $ -> $.shape "angle",
     if n >= 2 and @_text? == false then @_initText()
 
     # there is no point with index 2, finish the line creation
-    @_afterCreate() if ui == true and n == 3
+    if ui == true and n == 3
+      @constraint = @sketch.angleC(center: @points[0], points: @points[1..2], angle: @presentAngle)
+      @_afterCreate()
 
 
   _zoomChange: (e) ->
@@ -140,10 +142,12 @@ $ -> $.shape "angle",
     dimLength = $u($field.val())
     angle = dimLength.as("rad").val()
     @unit = dimLength.currentUnit
-    r = @tangents[1].modulus()
-    direction = if @presentAngle > 0 then 1 else -1
-    a = @angles[0] + direction*angle
-    @points[2].move(@base.add($V([Math.cos(a), Math.sin(a)]).x(r)))
+    @constraint.angle = angle
+    @points[0].move(@points[0].$v) # trigger constraint solver
+    #r = @tangents[1].modulus()
+    #direction = if @presentAngle > 0 then 1 else -1
+    #a = @angles[0] + direction*angle
+    #@points[2].move(@base.add($V([Math.cos(a), Math.sin(a)]).x(r)))
     #@points[1].move( @_$vUnitTangent.x(length).add(@points[0].$v), true, false )
     @render()
 
@@ -154,4 +158,5 @@ $ -> $.shape "angle",
 
   _afterDelete: () ->
     @_text.delete() if @_text?
+    @constraint.delete() if @constraint?
 

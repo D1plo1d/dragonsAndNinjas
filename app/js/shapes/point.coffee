@@ -126,26 +126,50 @@ $ -> $.shape "point",
       return nearestPoint
 
 
-  # move a point to a new absolute x/y position if it is not blocked by any constraints
   move: ($v, triggerConstraints = true, snapping = true) ->
     # snap the point to the closest point within snapping distance if this snapping is enabled for this move.
     nearestPoint = if snapping == true then @_snapToNearestPoint($v) else null
 
+    n=0
+    varmap = []
+    for p in @sketch._points
+      p.n1 = n++ 
+      p.n2 = n++ 
+      varmap.push p.$v.elements[i] for i in [0,1]
+    
+    polys = []
+    polys.push(c.poly()) for c in @sketch._constraints
+    #console.log "polys", polys
+    varmap[@n1] = $v.elements[0]
+    varmap[@n2] = $v.elements[1]
+    #console.log "init", varmap
+    initial = varmap.slice(0)
+    k=0.01
+    for iterN in [0...500]
+      varmapMod = varmap.slice(0)
+      satisfied=true
+      for c in polys
+        val1 = c varmap
+        if val1 > 0.005
+          satisfied = false
+          for v in c.vars
+            varmap[v] -= 0.002
+            val2 = c varmap
+            varmap[v] += 0.002
+            varmapMod[v] -= 0.08*val1*(val1-val2)/0.01
+      break if satisfied
+      varmap[v] -= 0.001*(varmap[v]-initial[v]) #if iterN < 50
+      varmap=varmapMod
+    #console.log "iterN", iterN
+    #console.log "end", varmap
 
-    # Trigger a before move event and return if preventDefault is called by any handlers
-    # This can be used by things like constraints to effect the positioning of points
-    beforeMoveEvent = jQuery.Event "beforemove", 
-      point: this
-      triggerConstraints: triggerConstraints
-      position: $v
-    @$node.trigger(beforeMoveEvent)
-    return if beforeMoveEvent.isDefaultPrevented()
-
-    # move the element and trigger a move event
-    @$v.elements[i] = $v.elements[i] for i in [0,1]
     @coincidentPoint = nearestPoint
-    @element.attr @_attrs()
-    @$node.trigger(jQuery.Event("move", point: this))
+    for p in @sketch._points
+      p.$v.elements[0] = varmap[p.n1] 
+      p.$v.elements[1] = varmap[p.n2]
+      p.element.attr p._attrs()
+      p.$node.trigger(jQuery.Event("move", point: p))
+
 
 
   _serialize: (obj_hash) ->

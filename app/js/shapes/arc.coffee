@@ -43,7 +43,7 @@ $ -> $.shape "arc",
 
     if @points.length == 3
       @_initElement()
-      @constraint = @sketch.coradial(center: @points[0], points: @points[1..2])
+      @constraint = @sketch.coradialC(center: @points[0], points: @points[1..2])
 
 
   direction: (direction) ->
