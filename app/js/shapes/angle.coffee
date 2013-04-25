@@ -134,7 +134,7 @@ $ -> $.shape "angle",
       liveCheck: true
       functionValidate: (val) -> val != 0
 
-    $(field).bind "validation", (e, valid) => ( @_textChange($(e.target)) if valid == true )
+    $(field).bind "validation", (e, valid) => ( _.debounce(@_textChange, 300)($(e.target)) if valid == true )
 
 
   _textChange: ($field) ->
